@@ -6,6 +6,8 @@ import java.io.Serializable;
 /**
  *  Sorted List (sequence) Abstract Data Type
  * Includes description of general methods to be implemented by sorted lists.
+ * NOTE: all implementations of this interface must have
+ * in the constructor a comparator for the generic type E
  * @author AED  Team
  * @version 1.0
  * @param <E> Generic Element

@@ -1,8 +1,3 @@
-/**
- * @author Tomás Silvestre 68594 tm.silvestre@campus.fct.unl.pt
- * @author Ricardo Laur 68342 r.laur@campus.fct.unl.pt
- */
-
 package dataStructures;
 
 import dataStructures.exceptions.NoSuchElementException;
@@ -15,52 +10,41 @@ import dataStructures.exceptions.NoSuchElementException;
  * @param <E> Generic Element
  *
  */
-public class FilterIterator<E> implements Iterator<E> {
+class FilterIterator<E> implements Iterator<E> {
 
     /**
      *  Iterator of elements to filter.
      */
-    Iterator<E> iterator;
+    private Iterator<E> iterator;
 
     /**
      *  Filter.
      */
-    Predicate<E> filter;
+    private Predicate<E> criterion;
 
     /**
      * Node with the next element in the iteration.
      */
-    E nextToReturn;
+    private E nextToReturn;
+
 
     /**
      *
      * @param list to be iterated
-     * @param filter
+     * @param criterion filter
      */
-    public FilterIterator(Iterator<E> list, Predicate<E> filter) {
-        iterator = list;
-        this.filter = filter;
-        rewind();
+    public FilterIterator(Iterator<E> list, Predicate<E> criterion) {
+        //TODO: Left as an exercise.
     }
 
     /**
      * Returns true if next would return an element
      *
      * @return true iff the iteration has more elements
-     *
-     * Time complexity: O(1) per returned element.
-     * Worst-case (when scanning many non-matching elements): O(n) where n is number
-     * of underlying elements scanned until a match is found.
      */
     public boolean hasNext() {
-        while (nextToReturn == null && iterator.hasNext()) {
-            E elem = iterator.next();
-            if (filter.check(elem)) {
-                nextToReturn = elem;
-                return true;
-            }
-        }
-        return nextToReturn != null;
+        //TODO: Left as an exercise.
+        return true;
     }
 
     /**
@@ -68,24 +52,18 @@ public class FilterIterator<E> implements Iterator<E> {
      *
      * @return the next element in the iteration
      * @throws NoSuchElementException - if call is made without verifying pre-condition
-     *
-     * Time complexity: O(1)
      */
     public E next() {
-        if (nextToReturn == null) throw new NoSuchElementException();
-        E current = nextToReturn;
-        nextToReturn = null;
-        return current;
+        //TODO: Left as an exercise.
+        return null;
     }
 
     /**
      * Restarts the iteration.
      * After rewind, if the iteration is not empty, next will return the first element.
-     *
-     * Time complexity: O(1)
      */
     public void rewind() {
-        iterator.rewind();
-        nextToReturn = null;
+        //TODO: Left as an exercise.
     }
+
 }
