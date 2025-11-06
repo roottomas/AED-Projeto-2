@@ -34,6 +34,8 @@ public class ListInArray<E> implements List<E> {
      * Returns true iff the list contains no elements.
      *
      * @return true if list is empty
+     *
+     * Time complexity: O(1)
      */
     public boolean isEmpty() {
         return counter==0;
@@ -43,6 +45,8 @@ public class ListInArray<E> implements List<E> {
      * Returns the number of elements in the list.
      *
      * @return number of elements in the list
+     *
+     * Time complexity: O(1)
      */
     public int size() {
         return counter;
@@ -52,6 +56,8 @@ public class ListInArray<E> implements List<E> {
      * Returns an iterator of the elements in the list (in proper sequence).
      *
      * @return Iterator of the elements in the list
+     *
+     * Time complexity: O(1)
      */
     public Iterator<E> iterator() {
         return new ArrayIterator<>(elems,counter);
@@ -62,10 +68,12 @@ public class ListInArray<E> implements List<E> {
      *
      * @return first element in the list
      * @throws NoSuchElementException - if size() == 0
+     *
+     * Time complexity: O(1)
      */
     public E getFirst() {
-        //TODO: Left as an exercise.
-        return null;
+        if(size()==0) throw new NoSuchElementException();
+        return elems[0];
     }
 
     /**
@@ -73,10 +81,12 @@ public class ListInArray<E> implements List<E> {
      *
      * @return last element in the list
      * @throws NoSuchElementException - if size() == 0
+     *
+     * Time complexity: O(1)
      */
     public E getLast() {
-        //TODO: Left as an exercise.
-        return null;
+        if(size()==0) throw new NoSuchElementException();
+        return elems[size()-1];
     }
 
     /**
@@ -88,10 +98,14 @@ public class ListInArray<E> implements List<E> {
      * @param position - position of element to be returned
      * @return element at position
      * @throws InvalidPositionException if position is not valid in the list
+     *
+     * Time complexity: O(1)
      */
     public E get(int position) {
-        //TODO: Left as an exercise.
-        return null;
+        if(position < 0 || position > size()-1){
+            throw new InvalidPositionException();
+        }
+        return elems[position];
     }
 
     /**
@@ -101,28 +115,55 @@ public class ListInArray<E> implements List<E> {
      *
      * @param element - element to be searched in list
      * @return position of the first occurrence of the element in the list (or -1)
+     *
+     * Time complexity: O(n) - n being the number of elements
      */
     public int indexOf(E element) {
-        //TODO: Left as an exercise.
-        return 0;
+        for (int i = 0; i < size(); i++) {
+            if (elems[i].equals(element)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void ensureCapacity() {
+        if (size() == elems.length) {
+            E[] newElems = (E[]) new Object[elems.length * FACTOR];
+            for (int i = 0; i < elems.length; i++) {
+                newElems[i] = elems[i];
+            }
+            elems = newElems;
+        }
     }
 
     /**
      * Inserts the specified element at the first position in the list.
      *
      * @param element to be inserted
+     *
+     * Time complexity: O(n) - n being the number of elements
      */
     public void addFirst(E element) {
-        //TODO: Left as an exercise.
+        ensureCapacity();
+        for(int i = size(); i>0 ; i--) {
+            elems[i] = elems[i-1];
+        }
+        elems[0] = element;
+        counter++;
     }
 
     /**
      * Inserts the specified element at the last position in the list.
      *
      * @param element to be inserted
+     *
+     * Time complexity: O(1). Worst-case O(n) when resizing is triggered.
      */
     public void addLast(E element) {
-        //TODO: Left as an exercise.
+        ensureCapacity();
+        elems[counter++] = element;
     }
 
     /**
@@ -134,9 +175,17 @@ public class ListInArray<E> implements List<E> {
      * @param position - position where to insert element
      * @param element  - element to be inserted
      * @throws InvalidPositionException - if position is not valid in the list
+     *
+     * Time complexity: O(n) - n being the number of elements
      */
     public void add(int position, E element) {
-        //TODO: Left as an exercise.
+        if (position < 0 || position > size()) throw new InvalidPositionException();
+        ensureCapacity();
+        for(int i = size(); i>position; i--) {
+            elems[i] = elems[i-1];
+        }
+        elems[position] = element;
+        counter++;
     }
 
     /**
@@ -144,10 +193,17 @@ public class ListInArray<E> implements List<E> {
      *
      * @return element removed from the first position of the list
      * @throws NoSuchElementException - if size() == 0
+     *
+     * Time complexity: O(n) - n being the number of elements
      */
     public E removeFirst() {
-        //TODO: Left as an exercise.
-        return null;
+        if(isEmpty()) throw new NoSuchElementException();
+        E removed = elems[0];
+        for (int i = 1; i < size(); i++) {
+            elems[i - 1] = elems[i];
+        }
+        elems[--counter]=null;
+        return removed;
     }
 
     /**
@@ -155,10 +211,14 @@ public class ListInArray<E> implements List<E> {
      *
      * @return element removed from the last position of the list
      * @throws NoSuchElementException - if size() == 0
+     *
+     * Time complexity: O(1)
      */
     public E removeLast() {
-        //TODO: Left as an exercise.
-        return null;
+        if(isEmpty()) throw new NoSuchElementException();
+        E removed = elems[--counter];
+        elems[counter] = null;
+        return removed;
     }
 
     /**
@@ -170,9 +230,20 @@ public class ListInArray<E> implements List<E> {
      * @param position - position of element to be removed
      * @return element removed at position
      * @throws InvalidPositionException - if position is not valid in the list
+     *
+     * Time complexity: O(n) - n being the number of elements
      */
     public E remove(int position) {
-        //TODO: Left as an exercise.
-        return null;
+        if (position < 0 || position >= size()) throw new InvalidPositionException();
+        if(position==size()-1) return removeLast();
+        else if(position==0) return removeFirst();
+        else {
+            E removed = elems[position];
+            for (int i = position + 1; i < size(); i++) {
+                elems[i - 1] = elems[i];
+            }
+            elems[--counter]=null;
+            return removed;
+        }
     }
 }

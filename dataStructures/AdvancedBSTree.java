@@ -15,9 +15,28 @@ abstract class AdvancedBSTree <K extends Comparable<K>,V> extends BSTSortedMap<K
 	 * @pre: z has a right child
  	*/
 	protected void rotateLeft( BTNode<Entry<K,V>> z){
-   	 //TODO: Left as an exercise.
-   	 //  a single rotation modifies a constant number of parent-child relationships,
-    	// it can be implemented in O(1)time
+        BTNode<Entry<K,V>> y = (BTNode<Entry<K,V>>) z.getRightChild();
+        BTNode<Entry<K,V>> zParent = (BTNode<Entry<K, V>>) z.getParent();
+        BTNode<Entry<K,V>> yLeft = (BTNode<Entry<K, V>>) y.getLeftChild();
+        if (zParent == null) {
+            // z was root
+            root = y;
+            y.setParent(null);
+        } else {
+            // attach y to zParent appropriately
+            if (zParent.getLeftChild() == z) {
+                zParent.setLeftChild(y);
+            } else {
+                zParent.setRightChild(y);
+            }
+            y.setParent(zParent);
+        }
+
+        y.setLeftChild(z);
+        z.setParent(y);
+
+        z.setRightChild(yLeft);
+        if (yLeft != null) yLeft.setParent(z);
 	}
 
      /**
@@ -28,9 +47,29 @@ abstract class AdvancedBSTree <K extends Comparable<K>,V> extends BSTSortedMap<K
      * @pre: z has a left child
      */
     protected void rotateRight( BTNode<Entry<K,V>> z){
-        //TODO: Left as an exercise.
-        //  a single rotation modifies a constant number of parent-child relationships,
-        // it can be implemented in O(1)time
+        BTNode<Entry<K,V>> y = (BTNode<Entry<K,V>>) z.getLeftChild();
+        BTNode<Entry<K,V>> zParent = (BTNode<Entry<K, V>>) z.getParent();
+        BTNode<Entry<K,V>> yRight = (BTNode<Entry<K, V>>) y.getRightChild();
+        if (zParent == null) {
+            // z was root
+            root = y;
+            y.setParent(null);
+        } else {
+            // attach y to zParent appropriately
+            if (zParent.getLeftChild() == z) {
+                zParent.setLeftChild(y);
+            } else {
+                zParent.setRightChild(y);
+            }
+            y.setParent(zParent);
+        }
+
+        // rotate
+        y.setRightChild(z);
+        z.setParent(y);
+
+        z.setLeftChild(yRight);
+        if (yRight != null) yRight.setParent(z);
     }
 
     /**
@@ -50,12 +89,31 @@ abstract class AdvancedBSTree <K extends Comparable<K>,V> extends BSTSortedMap<K
      * @return the new root of the restructured subtree
      */
     protected BTNode<Entry<K,V>> restructure (BTNode<Entry<K,V>> x) {
-        //TODO: Left as an exercise.
-        // the modification of a tree T caused by a trinode restructuring operation
-        // can be implemented through case analysis either as a single rotation or as a double rotation.
-        // The double rotation arises when position x has the middle of the three relevant keys
-        // and is first rotated above its parent Y, and then above what was originally its grandparent Z.
-        // In any of the cases, the trinode restructuring is completed with O(1)running time
-        return null;
+        BTNode<Entry<K,V>> y = (BTNode<Entry<K,V>>) x.getParent();
+        BTNode<Entry<K,V>> z = (BTNode<Entry<K,V>>) y.getParent();
+
+        // Determine configuration: which child is y of z, and which child is x of y
+        boolean yIsLeft = (z.getLeftChild() == y);
+        boolean xIsLeft = (y.getLeftChild() == x);
+
+        if (yIsLeft && xIsLeft) {
+            // left-left case: single right rotation at z
+            rotateRight(z);
+            return y;
+        } else if (!yIsLeft && !xIsLeft) {
+            // right-right case: single left rotation at z
+            rotateLeft(z);
+            return y;
+        } else if (yIsLeft) {
+            // left-right case: double rotation (left at y, then right at z)
+            rotateLeft(y);
+            rotateRight(z);
+            return x;
+        } else {
+            // right-left case: double rotation (right at y, then left at z)
+            rotateRight(y);
+            rotateLeft(z);
+            return x;
+        }
     }
 }

@@ -60,9 +60,14 @@ public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V
     }
 
     private BTNode<Entry<K,V>> getNode(BTNode<Entry<K,V>> node, K key) {
-        //TODO: Left as an exercise.
-        
-        return null;
+        if (node == null) return null;
+        K nodeKey = node.getElement().key();
+        int cmp = key.compareTo(nodeKey);
+        if (cmp == 0) return node;
+        if (cmp < 0)
+            return getNode((BTNode<Entry<K,V>>) node.getLeftChild(), key);
+        else
+            return getNode((BTNode<Entry<K,V>>) node.getRightChild(), key);
     }
 
     /**
@@ -77,8 +82,40 @@ public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V
      */
     @Override
     public V put(K key, V value) {
-        //TODO: Left as an exercise.
-       
+        Map.Entry<K,V> newEntry = new Map.Entry<>(key, value);
+
+        if (isEmpty()) {
+            root = new BTNode<>(newEntry);
+            return null;
+        }
+
+        BTNode<Entry<K,V>> parent = null;
+        BTNode<Entry<K,V>> curr = (BTNode<Entry<K,V>>) root;
+        int cmp = 0;
+
+        while (curr != null) {
+            parent = curr;
+            K currKey = curr.getElement().key();
+            cmp = key.compareTo(currKey);
+            if (cmp == 0) {
+                // key exists -> replace value and return old
+                V old = curr.getElement().value();
+                curr.setElement(new Map.Entry<>(key, value));
+                return old;
+            } else if (cmp < 0) {
+                curr = (BTNode<Entry<K,V>>) curr.getLeftChild();
+            } else {
+                curr = (BTNode<Entry<K,V>>) curr.getRightChild();
+            }
+        }
+
+        // insert as child of parent
+        BTNode<Entry<K,V>> newNode = new BTNode<>(newEntry, parent);
+        if (cmp < 0) {
+            parent.setLeftChild(newNode);
+        } else {
+            parent.setRightChild(newNode);
+        }
         return null;
     }
 
@@ -94,9 +131,57 @@ public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V
      */
     @Override
     public V remove(K key) {
-        //TODO: Left as an exercise.
-       
-        return null;
+        BTNode<Entry<K,V>> node = getNode((BTNode<Entry<K,V>>) root, key);
+        if (node == null) return null;
+
+        V oldValue = node.getElement().value();
+
+        // case 1: node is leaf
+        if (node.isLeaf()) {
+            if (node.isRoot()) {
+                root = null;
+            } else {
+                BTNode<Entry<K, V>> parent = (BTNode<Entry<K, V>>) node.getParent();
+                if (parent.getLeftChild() == node) parent.setLeftChild(null);
+                else parent.setRightChild(null);
+            }
+            return oldValue;
+        }
+
+        // case 2: node has only one child
+        Node<Entry<K,V>> left = node.getLeftChild();
+        Node<Entry<K,V>> right = node.getRightChild();
+        if (left == null || right == null) {
+            Node<Entry<K,V>> child = (left != null) ? left : right;
+            if (node.isRoot()) {
+                root = child;
+                ((BTNode<Entry<K,V>>) child).setParent(null);
+            } else {
+                BTNode<Entry<K,V>> parent = (BTNode<Entry<K,V>>) node.getParent();
+                if (parent.getLeftChild() == node) parent.setLeftChild(child);
+                else parent.setRightChild(child);
+            }
+            return oldValue;
+        }
+
+        // case 3: node has two children -> find successor (leftmost of right subtree)
+        BTNode<Entry<K,V>> successor = ((BTNode<Entry<K,V>>) node.getRightChild()).furtherLeftElement();
+        // copy successor's entry to current node
+        node.setElement(successor.getElement());
+
+        // now remove successor (successor has at most right child)
+        BTNode<Entry<K,V>> succParent = (BTNode<Entry<K,V>>) successor.getParent();
+        Node<Entry<K,V>> succRight = successor.getRightChild();
+
+        if (succParent.getLeftChild() == successor) {
+            succParent.setLeftChild(succRight);
+        } else {
+            succParent.setRightChild(succRight);
+        }
+        if (succRight != null) {
+            ((BTNode<Entry<K,V>>) succRight).setParent(succParent);
+        }
+        return oldValue;
     }
 
     /**

@@ -9,12 +9,10 @@ import dataStructures.exceptions.NoSuchElementException;
  */
 class KeysIterator<E> implements Iterator<E> {
 
-    
-     //TODO: Left as an exercise.
-
+    private final Iterator<Map.Entry<E, ?>> it;
 
     public KeysIterator(Iterator<Map.Entry<E,?>> it) {
-       //TODO: Left as an exercise.
+        this.it = it;
     }
 
     /**
@@ -23,9 +21,9 @@ class KeysIterator<E> implements Iterator<E> {
      *
      * @return true iff the iteration has more elements
      */
+    @Override
     public boolean hasNext() {
-	//TODO: Left as an exercise.
-        return false;
+        return it.hasNext();
     }
 
     /**
@@ -34,16 +32,18 @@ class KeysIterator<E> implements Iterator<E> {
      * @return the next element in the iteration
      * @throws NoSuchElementException - if call is made without verifying pre-condition
      */
+    @Override
     public E next() {
-	//TODO: Left as an exercise.
-        return null;
+        if (!hasNext()) throw new NoSuchElementException();
+        return it.next().key();
     }
 
     /**
      * Restarts the iteration.
      * After rewind, if the iteration is not empty, next will return the first element.
      */
+    @Override
     public void rewind() {
-        //TODO: Left as an exercise.
+        it.rewind();
     }
 }

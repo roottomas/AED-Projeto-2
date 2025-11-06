@@ -45,10 +45,43 @@ package dataStructures;
      // specified number; or zero if all such primes are greater
      // than Integer.MAX VALUE.
      protected static int nextPrime( int number ){
-         //TODO: Left as exercise
-        
+         if (number <= 2) return 2;
+
+         // start candidate at number (if even, move to next odd)
+         long candidate = number;
+         if (candidate % 2 == 0) candidate++;
+
+         // search odd candidates up to Integer.MAX_VALUE
+         for (; candidate <= Integer.MAX_VALUE; candidate += 2) {
+             if (isPrime(candidate)) {
+                 return (int) candidate;
+             }
+             // avoid overflow when candidate is near Integer.MAX_VALUE
+             if (candidate >= Integer.MAX_VALUE - 2) break;
+         }
+
+         // check Integer.MAX_VALUE itself (in case it is prime)
+         if (Integer.MAX_VALUE >= number && isPrime((long) Integer.MAX_VALUE)) {
+             return Integer.MAX_VALUE;
+         }
+
+         // no prime found within int range
          return 0;
      }
+
+    /**
+     * Simple primality test for positive longs.
+     * Not optimized for extremely large numbers but fine for int-range inputs.
+     */
+    private static boolean isPrime(long n) {
+        if (n < 2) return false;
+        if (n % 2 == 0) return n == 2;
+        long limit = (long) Math.sqrt(n);
+        for (long i = 3; i <= limit; i += 2) {
+            if (n % i == 0) return false;
+        }
+        return true;
+    }
 
      // Returns true iff the hash table cannot contain more entries.
      protected boolean isFull( ){

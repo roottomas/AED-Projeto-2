@@ -7,30 +7,28 @@ public class QueueInList<E> implements Queue<E> {
     // Memory of the queue: a list.
     private List<E> list;
 
-    public QueueInList( ){
+    public QueueInList() {
         list = new SinglyLinkedList<E>();
     }
 
     /**
      * Returns true iff the queue contains no elements.
      *
-     * @return
+     * @return true iff the queue contains no elements.
      */
     @Override
     public boolean isEmpty() {
-        //TODO: Left as an exercise.
-        return false;
+        return list.isEmpty();
     }
 
     /**
      * Returns the number of elements in the queue.
      *
-     * @return
+     * @return the number of elements in the queue.
      */
     @Override
     public int size() {
-        //TODO: Left as an exercise.
-        return 0;
+        return list.size();
     }
 
     /**
@@ -40,29 +38,34 @@ public class QueueInList<E> implements Queue<E> {
      */
     @Override
     public void enqueue(E element) {
-        //TODO: Left as an exercise.
+        list.addLast(element);
     }
 
     /**
      * Removes and returns the element at the front of the queue.
      *
-     * @return
+     * @return the element at the front of the queue.
      * @throws EmptyQueueException
      */
     @Override
     public E dequeue() {
-        //TODO: Left as an exercise.
-        return null;
+        if (list.isEmpty()) {
+            throw new EmptyQueueException();
+        }
+        return list.removeFirst();
     }
+
     /**
-     * Returns the element at the front of the queue.
+     * Returns the element at the front of the queue without removing it.
      *
-     * @return
+     * @return the element at the front of the queue without removing it.
      * @throws EmptyQueueException
      */
     @Override
     public E peek() {
-        //TODO: Left as an exercise.
-        return null;
+        if (list.isEmpty()) {
+            throw new EmptyQueueException();
+        }
+        return list.getFirst();
     }
 }

@@ -17,7 +17,9 @@ class AVLNode<E> extends BTNode<E> {
     public AVLNode( E element, AVLNode<E> parent,
                     AVLNode<E> left, AVLNode<E> right ){
         super(element,parent,left,right);
-        //TODO: Left as an exercise.
+        int leftH = height(left);
+        int rightH = height(right);
+        this.height = 1 + Math.max(leftH, rightH);
     }
     public AVLNode( E element, AVLNode<E> parent){
         super(element, parent,null, null);
@@ -37,7 +39,11 @@ class AVLNode<E> extends BTNode<E> {
      * @param node
      */
     public void setLeftChild(AVLNode<E> node) {
-        //TODO: Left as an exercise.
+        super.setLeftChild(node);
+        // maintain parent pointer of child
+        if (node != null) ((BTNode<E>) node).setParent(this);
+        // recalculate this node height
+        updateHeight();
     }
 
     /**
@@ -45,10 +51,35 @@ class AVLNode<E> extends BTNode<E> {
      * @param node
      */
     public void setRightChild(AVLNode<E> node) {
-        //TODO: Left as an exercise.
+        // update pointer in superclass
+        super.setRightChild(node);
+        // maintain parent pointer of child
+        if (node != null) ((BTNode<E>) node).setParent(this);
+        // recalculate this node height
+        updateHeight();
+    }
+
+    /**
+     * Recomputes this node height from its children.
+     */
+    public void updateHeight() {
+        AVLNode<E> left = (AVLNode<E>) getLeftChild();
+        AVLNode<E> right = (AVLNode<E>) getRightChild();
+        int leftH = height(left);
+        int rightH = height(right);
+        this.height = 1 + Math.max(leftH, rightH);
+    }
+
+    /**
+     * Balance factor = height(left) - height(right)
+     * positive => left heavier, negative => right heavier
+     * @return balance factor
+     */
+    public int getBalanceFactor() {
+        AVLNode<E> left = (AVLNode<E>) getLeftChild();
+        AVLNode<E> right = (AVLNode<E>) getRightChild();
+        return height(left) - height(right);
     }
 // others public methods
 //TODO: Left as an exercise.
-
-
 }

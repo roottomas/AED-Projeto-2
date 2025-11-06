@@ -21,7 +21,12 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
     
     public SepChainHashTable( int capacity ){
         super(capacity);
-       //TODO: Left as exercise
+        table = makeTable((int) (capacity * IDEAL_LOAD_FACTOR));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <K,V> Map<K,V>[] makeTable(int length) {
+        return (Map<K,V>[]) java.lang.reflect.Array.newInstance(Map.class, length);
     }
 
     // Returns the hash value of the specified key.
@@ -37,8 +42,10 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
      * or null if the dictionary does not have an entry with that key
      */
     public V get(K key) {
-        //TODO: Left as an exercise.
-    	return null;
+        int idx = hash(key);
+        Map<K,V> bucket = table[idx];
+        if (bucket == null) return null;
+        return bucket.get(key);
     }
 
     /**
@@ -54,14 +61,48 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
     public V put(K key, V value) {
         if (isFull())
             rehash();
-        //TODO: Left as an exercise.
-       
-        return null;
+
+        int idx = hash(key);
+        Map<K,V> bucket = table[idx];
+        if (bucket == null) {
+            bucket = new MapSinglyList<>();
+            table[idx] = bucket;
+        }
+
+        V old = bucket.put(key, value);
+        if (old == null) {
+            currentSize++;
+        }
+        return old;
     }
 
 
     private void rehash() {
-        //TODO: Left as an exercise.
+        int oldCapacity = table.length;
+        int proposed = oldCapacity <= 1 ? 3 : oldCapacity * 2;
+        int newCapacity = HashTable.nextPrime(proposed);
+        if (newCapacity == 0) {
+            newCapacity = proposed;
+        }
+
+        Map<K,V>[] newTable = makeTable(newCapacity);
+
+        for (Map<K, V> bucket : table) {
+            if (bucket == null) continue;
+            Iterator<Entry<K, V>> it = bucket.iterator();
+            while (it.hasNext()) {
+                Entry<K, V> e = it.next();
+                int idx = Math.abs(e.key().hashCode()) % newTable.length;
+                Map<K, V> nb = newTable[idx];
+                if (nb == null) {
+                    nb = new MapSinglyList<>();
+                    newTable[idx] = nb;
+                }
+                nb.put(e.key(), e.value());
+            }
+        }
+        table = newTable;
+        this.maxSize = (int) (table.length * MAX_LOAD_FACTOR);
     }
 
     /**
@@ -74,8 +115,12 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
      * or null if the dictionary does not an entry with that key
      */
     public V remove(K key) {
-        //TODO: Left as an exercise.
-        return null;
+        int idx = hash(key);
+        Map<K,V> bucket = table[idx];
+        if (bucket == null) return null;
+        V old = bucket.remove(key);
+        if (old != null) currentSize--;
+        return old;
     }
 
     /**

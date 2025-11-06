@@ -1,4 +1,5 @@
 package dataStructures;
+import dataStructures.exceptions.*;
 /**
  * Closed Hash Table
  * @author AED  Team
@@ -49,8 +50,18 @@ public class ClosedHashTable<K,V> extends HashTable<K,V> {
      * @return the index of the table, where is the entry with the specified key, or null
      */
     int searchLinearProving(K key) {
-        //TODO: Left as an exercise.      
-        return NOT_FOUND; 
+        for (int i = 0; i < table.length; i++) {
+            int idx = hash(key, i);
+            Entry<K,V> e = table[idx];
+            if (e == null) {
+                return NOT_FOUND;
+            }
+            if (e == REMOVED_CELL) {
+                continue;
+            }
+            if (e.key().equals(key)) return idx;
+        }
+        return NOT_FOUND;
     }
 
     
@@ -64,9 +75,9 @@ public class ClosedHashTable<K,V> extends HashTable<K,V> {
      */
     @Override
     public V get(K key) {
-        //TODO: Left as an exercise.
-        
-        return null;
+        int idx = searchLinearProving(key);
+        if (idx == NOT_FOUND) return null;
+        return table[idx].value();
     }
 
     /**
@@ -83,12 +94,58 @@ public class ClosedHashTable<K,V> extends HashTable<K,V> {
     public V put(K key, V value) {
         if (isFull())
             rehash();
-        //TODO: Left as an exercise.
-        return null;
+        int firstRemoved = NOT_FOUND;
+        for (int i = 0; i < table.length; i++) {
+            int idx = hash(key, i);
+            Entry<K,V> e = table[idx];
+
+            if (e == null) {
+                int insertIdx = (firstRemoved != NOT_FOUND) ? firstRemoved : idx;
+                table[insertIdx] = new Entry<>(key, value);
+                currentSize++;
+                return null;
+            }
+            if (e == REMOVED_CELL) {
+                if (firstRemoved == NOT_FOUND) firstRemoved = idx;
+                continue;
+            }
+            if (e.key().equals(key)) {
+                V old = e.value();
+                table[idx] = new Entry<>(key, value);
+                return old;
+            }
+        }
+
+        if (firstRemoved != NOT_FOUND) {
+            table[firstRemoved] = new Entry<>(key, value);
+            currentSize++;
+            return null;
+        }
+
+        return put(key, value);
     }
 
      private void rehash(){
- //TODO: Left as an exercise.
+         int oldLen = table.length;
+         int proposed = Math.max(3, oldLen * 2);
+         int newLen = HashTable.nextPrime(proposed);
+         if (newLen == 0) newLen = proposed; // fallback
+         @SuppressWarnings("unchecked")
+         Entry<K,V>[] newTable = (Entry<K,V>[]) new Entry[newLen];
+
+         for (Entry<K, V> e : table) {
+             if (e == null || e == REMOVED_CELL) continue;
+             K key = e.key();
+             for (int j = 0; j < newTable.length; j++) {
+                 int idx = Math.abs(key.hashCode() + j) % newTable.length;
+                 if (newTable[idx] == null) {
+                     newTable[idx] = new Entry<>(key, e.value());
+                     break;
+                 }
+             }
+         }
+         table = newTable;
+         maxSize = (int)(table.length * MAX_LOAD_FACTOR);
      }
 
    
@@ -103,9 +160,14 @@ public class ClosedHashTable<K,V> extends HashTable<K,V> {
      */
     @Override
     public V remove(K key) {
-        //TODO: Left as an exercise.
-        
-        return null;
+        int idx = searchLinearProving(key);
+        if (idx == NOT_FOUND) return null;
+        V old = table[idx].value();
+        @SuppressWarnings("unchecked")
+        Entry<K,V> removedMarker = (Entry<K,V>) REMOVED_CELL;
+        table[idx] = removedMarker;
+        currentSize--;
+        return old;
     }
 
     /**
@@ -115,9 +177,31 @@ public class ClosedHashTable<K,V> extends HashTable<K,V> {
      */
     @Override
     public Iterator<Entry<K, V>> iterator() {
-         //TODO: Left as an exercise.
-        
-        return null;
+        return new ClosedHashTableIterator();
     }
 
+    private class ClosedHashTableIterator implements Iterator<Entry<K,V>> {
+        private int index;
+        public ClosedHashTableIterator() { rewind(); }
+
+        @Override
+        public boolean hasNext() {
+            return index < table.length;
+        }
+
+        @Override
+        public Entry<K,V> next() {
+            while (index < table.length) {
+                Entry<K,V> e = table[index++];
+                if (e != null && e != REMOVED_CELL) return e;
+            }
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public void rewind() {
+            index = 0;
+            while (index < table.length && (table[index] == null || table[index] == REMOVED_CELL)) index++;
+        }
+    }
 }
