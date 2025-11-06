@@ -44,5 +44,39 @@ abstract class BTree<E> extends Tree<E> {
         return node;
     }
 
-   //new methods: Left as an exercise.
+    protected BTNode<E> furtherLeftElement(BTNode<E> start) {
+        if (start == null) return null;
+        BTNode<E> node = start;
+        while (node.getLeftChild() != null) {
+            node = (BTNode<E>) node.getLeftChild();
+        }
+        return node;
+    }
+
+    protected BTNode<E> furtherRightElement(BTNode<E> start) {
+        if (start == null) return null;
+        BTNode<E> node = start;
+        while (node.getRightChild() != null) {
+            node = (BTNode<E>) node.getRightChild();
+        }
+        return node;
+    }
+
+    // 2) transplant: replaces subtree u with v. v may be null.
+    protected void transplant(BTNode<E> u, Node<E> v) {
+        BTNode<E> uParent = (BTNode<E>) u.getParent();
+        if (u.isRoot()) {
+            // v becomes root (v can be null)
+            root = v;
+            if (v != null) ((BTNode<E>) v).setParent(null);
+        } else {
+            if (uParent.getLeftChild() == u) {
+                uParent.setLeftChild(v);
+            } else {
+                uParent.setRightChild(v);
+            }
+            if (v != null) ((BTNode<E>) v).setParent(uParent);
+        }
+    }
+    //new methods: Left as an exercise.
 }
