@@ -18,20 +18,30 @@ abstract class BTree<E> extends Tree<E> {
 
     /**
      * Return the further left node of the tree
-     * @return
+     * @return further left node of the tree
      */
     BTNode<E> furtherLeftElement() {
-        //TODO: Left as an exercise.
-        return null;
+        if (isEmpty()) return null;
+
+        BTNode<E> node = (BTNode<E>) root;
+        while (node.getLeftChild() != null) {
+            node = (BTNode<E>) node.getLeftChild();
+        }
+        return node;
     }
 
     /**
      * Return the further right node of the tree
-     * @return
+     * @return further right node of the tree
      */
     BTNode<E> furtherRightElement() {
-        //TODO: Left as an exercise.
-        return null;
+        if (isEmpty()) return null;
+
+        BTNode<E> node = (BTNode<E>) root;
+        while (node.getRightChild() != null) {
+            node = (BTNode<E>) node.getRightChild();
+        }
+        return node;
     }
 
    //new methods: Left as an exercise.
