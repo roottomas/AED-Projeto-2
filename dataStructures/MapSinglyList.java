@@ -1,4 +1,7 @@
 package dataStructures;
+
+import dataStructures.exceptions.NoSuchElementException;
+
 /**
  * Map with a singly linked list with head and size
  * @author AED  Team
@@ -95,8 +98,8 @@ class MapSinglyList<K,V> implements Map<K, V> {
      * @return previous value associated with key,
      * or null if the dictionary does not an entry with that key
      */
-    public V remove(K key) {
-        if (key == null) return null;
+    public V remove(K key) throws NoSuchElementException {
+        if (key == null) throw new NoSuchElementException();
         SinglyListNode<Entry<K,V>> curr = head;
         SinglyListNode<Entry<K,V>> prev = null;
         while (curr != null) {
