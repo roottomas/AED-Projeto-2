@@ -167,7 +167,7 @@ public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V
      */
     @Override
     public Iterator<Entry<K, V>> iterator() {
-        return new InOrderIterator((BTNode<Entry<K,V>>) root);
+        return new InOrderIterator<>((BTNode<Entry<K,V>>) root);
     }
 
     /**

@@ -131,9 +131,7 @@ public class ListInArray<E> implements List<E> {
     private void ensureCapacity() {
         if (size() == elems.length) {
             E[] newElems = (E[]) new Object[elems.length * FACTOR];
-            for (int i = 0; i < elems.length; i++) {
-                newElems[i] = elems[i];
-            }
+            System.arraycopy(elems, 0, newElems, 0, elems.length);
             elems = newElems;
         }
     }

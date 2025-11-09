@@ -18,19 +18,7 @@ abstract class AdvancedBSTree <K extends Comparable<K>,V> extends BSTSortedMap<K
         BTNode<Entry<K,V>> y = (BTNode<Entry<K,V>>) z.getRightChild();
         BTNode<Entry<K,V>> zParent = (BTNode<Entry<K, V>>) z.getParent();
         BTNode<Entry<K,V>> yLeft = (BTNode<Entry<K, V>>) y.getLeftChild();
-        if (zParent == null) {
-            // z was root
-            root = y;
-            y.setParent(null);
-        } else {
-            // attach y to zParent appropriately
-            if (zParent.getLeftChild() == z) {
-                zParent.setLeftChild(y);
-            } else {
-                zParent.setRightChild(y);
-            }
-            y.setParent(zParent);
-        }
+        rotateHelper(z, y, zParent);
 
         y.setLeftChild(z);
         z.setParent(y);
@@ -50,6 +38,16 @@ abstract class AdvancedBSTree <K extends Comparable<K>,V> extends BSTSortedMap<K
         BTNode<Entry<K,V>> y = (BTNode<Entry<K,V>>) z.getLeftChild();
         BTNode<Entry<K,V>> zParent = (BTNode<Entry<K, V>>) z.getParent();
         BTNode<Entry<K,V>> yRight = (BTNode<Entry<K, V>>) y.getRightChild();
+        rotateHelper(z, y, zParent);
+        // rotate
+        y.setRightChild(z);
+        z.setParent(y);
+
+        z.setLeftChild(yRight);
+        if (yRight != null) yRight.setParent(z);
+    }
+
+    private void rotateHelper(BTNode<Entry<K, V>> z, BTNode<Entry<K, V>> y, BTNode<Entry<K, V>> zParent) {
         if (zParent == null) {
             // z was root
             root = y;
@@ -63,13 +61,6 @@ abstract class AdvancedBSTree <K extends Comparable<K>,V> extends BSTSortedMap<K
             }
             y.setParent(zParent);
         }
-
-        // rotate
-        y.setRightChild(z);
-        z.setParent(y);
-
-        z.setLeftChild(yRight);
-        if (yRight != null) yRight.setParent(z);
     }
 
     /**

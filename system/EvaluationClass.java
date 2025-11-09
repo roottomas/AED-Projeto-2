@@ -11,7 +11,7 @@ public class EvaluationClass implements Evaluation, Serializable {
 
     private List<EvaluationEntry> evaluations;
     private float average;
-
+    private long timeStamp;
     /**
      * Create an EvaluationClass containing a default initial entry.
      * A default evaluation with 4 stars and empty description is added to avoid empty averages.
@@ -21,6 +21,7 @@ public class EvaluationClass implements Evaluation, Serializable {
         EvaluationEntry defaultEntry = new EvaluationEntryClass(4, "");
         evaluations.addLast(defaultEntry);
         this.updateAverage();
+        timeStamp = System.currentTimeMillis();
     }
 
     /**
@@ -46,7 +47,7 @@ public class EvaluationClass implements Evaluation, Serializable {
             sum += evaluations.get(i).getStars();
             count++;
         }
-
+        timeStamp = System.currentTimeMillis() - timeStamp;
         average = sum / count;
     }
 
