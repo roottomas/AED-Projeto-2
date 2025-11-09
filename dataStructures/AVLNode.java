@@ -41,7 +41,7 @@ class AVLNode<E> extends BTNode<E> {
     public void setLeftChild(AVLNode<E> node) {
         super.setLeftChild(node);
         // maintain parent pointer of child
-        if (node != null) ((BTNode<E>) node).setParent(this);
+        if (node != null) node.setParent(this);
         // recalculate this node height
         updateHeight();
     }
@@ -54,7 +54,7 @@ class AVLNode<E> extends BTNode<E> {
         // update pointer in superclass
         super.setRightChild(node);
         // maintain parent pointer of child
-        if (node != null) ((BTNode<E>) node).setParent(this);
+        if (node != null) node.setParent(this);
         // recalculate this node height
         updateHeight();
     }

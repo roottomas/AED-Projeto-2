@@ -101,7 +101,8 @@ class BTNode<E> implements Node<E> {
      * @param node
      */
     public void setLeftChild(Node<E> node) {
-        leftChild=node;
+        this.leftChild = node;
+        if (node != null) ((BTNode<E>) node).setParent(this);
     }
 
     /**
@@ -109,7 +110,8 @@ class BTNode<E> implements Node<E> {
      * @param node
      */
     public void setRightChild(Node<E> node) {
-        rightChild=node;
+        this.rightChild = node;
+        if (node != null) ((BTNode<E>) node).setParent(this);
     }
 
     /**
