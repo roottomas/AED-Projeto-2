@@ -29,11 +29,4 @@ public interface StudentsStoringService extends Service {
      * @return TwoWayList of StudentClass
      */
     TwoWayList<StudentClass> getStudents();
-
-    /**
-     * Replace the internal students list (used during deserialization / reconstruction).
-     *
-     * @param newStudents new TwoWayList to set as internal storage
-     */
-    void setStudents(TwoWayList<StudentClass> newStudents);
 }

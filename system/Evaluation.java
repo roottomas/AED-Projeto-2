@@ -28,4 +28,6 @@ public interface Evaluation {
      * @return true if any entry contains tag
      */
     boolean containsTag(String tag);
+
+    long getLastUpdate();
 }

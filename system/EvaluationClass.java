@@ -12,6 +12,9 @@ public class EvaluationClass implements Evaluation, Serializable {
     private List<EvaluationEntry> evaluations;
     private float average;
     private long timeStamp;
+    private int count;
+    private int sumStars;
+
     /**
      * Create an EvaluationClass containing a default initial entry.
      * A default evaluation with 4 stars and empty description is added to avoid empty averages.
@@ -20,7 +23,9 @@ public class EvaluationClass implements Evaluation, Serializable {
         evaluations = new ListInArray<>(50);
         EvaluationEntry defaultEntry = new EvaluationEntryClass(4, "");
         evaluations.addLast(defaultEntry);
-        this.updateAverage();
+        count = 1;
+        sumStars = 4;
+        average = 4.0f;
         timeStamp = System.currentTimeMillis();
     }
 
@@ -33,22 +38,10 @@ public class EvaluationClass implements Evaluation, Serializable {
     @Override
     public void addEvaluationEntry(EvaluationEntry entry) {
         evaluations.addLast(entry);
-        updateAverage();
-    }
-
-    /**
-     * Recompute the average rating from stored entries.
-     */
-    private void updateAverage() {
-        float sum = 0;
-        int count = 0;
-
-        for (int i = 0; i < evaluations.size(); i++) {
-            sum += evaluations.get(i).getStars();
-            count++;
-        }
-        timeStamp = System.currentTimeMillis() - timeStamp;
-        average = sum / count;
+        sumStars += entry.getStars();
+        count++;
+        average = (float) sumStars / (float) count;
+        timeStamp = System.currentTimeMillis();
     }
 
     /**
@@ -61,6 +54,11 @@ public class EvaluationClass implements Evaluation, Serializable {
         return average;
     }
 
+    @Override
+    public long getLastUpdate(){
+        return timeStamp;
+    }
+
     /**
      * Returns true if any evaluation entry description contains the whole word `tag` (case-insensitive).
      *
@@ -68,6 +66,7 @@ public class EvaluationClass implements Evaluation, Serializable {
      * @param tag search tag
      * @return true if at least one entry contains the tag
      */
+    @Override
     public boolean containsTag(String tag) {
         Predicate<EvaluationEntry> pred = e -> {
             String d = e.getDescription();
@@ -78,5 +77,4 @@ public class EvaluationClass implements Evaluation, Serializable {
 
         return fit.hasNext();
     }
-
 }
