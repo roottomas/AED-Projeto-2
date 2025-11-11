@@ -11,6 +11,10 @@ import dataStructures.exceptions.NoSuchElementException;
  */
 public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V>{
 
+    public AVLSortedMap(){
+        super();
+    }
+
     @Override
     public V put(K key, V value) {
         V old = super.put(key, value);

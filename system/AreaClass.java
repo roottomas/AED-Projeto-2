@@ -22,16 +22,16 @@ public class AreaClass implements Area, Serializable {
     private final String name;
 
     // Students
-    private SortedList<StudentClass> alphOrderStudents;
+    private SortedMap<String,StudentClass> alphOrderStudents;
     private List<StudentClass> students;
-
+    private Map<String,StudentClass> studentsByName;
+    private Map<String,SinglyLinkedList<StudentClass>> studentsByCountry;
     // Services
-    private SortedList<ServiceClass> leisureServicesByPrice;
-    private SortedList<ServiceClass> lodgingServicesByPrice;
-    private SortedList<ServiceClass> eatingServicesByPrice;
+    private SortedList<ServiceClass>[] servicesByPrice;
     private List<ServiceClass> servicesByInsertion;
-    private TwoWayList<ServiceClass>[][] servicesByRating;
-    private TwoWayList<ServiceClass>[] servicesByEvaluation;
+    private List<ServiceClass>[][] servicesByRating;
+    private List<ServiceClass>[] servicesByEvaluation;
+    private Map<String,ServiceClass> servicesByName;
 
     // Location
     private final PlaneOfLocation locationOfArea;
@@ -45,29 +45,31 @@ public class AreaClass implements Area, Serializable {
     public AreaClass(String name, PlaneOfLocation locationOfArea) {
         this.name = name;
 
-        // Initialize student lists
-        alphOrderStudents = new SortedDoublyLinkedList<>(new AlphOrderComparator());
-        students = new ListInArray<>(50);
-
+        // Initialize student structures
+        alphOrderStudents = new AVLSortedMap<>();
+        students = new SinglyLinkedList<>();
+        studentsByName = new SepChainHashTable<>();
+        studentsByCountry = new SepChainHashTable<>();
         // Initialize service lists
-        leisureServicesByPrice = new SortedDoublyLinkedList<>(new PriceComparator());
-        lodgingServicesByPrice = new SortedDoublyLinkedList<>(new PriceComparator());
-        eatingServicesByPrice = new SortedDoublyLinkedList<>(new PriceComparator());
-        servicesByInsertion = new ListInArray<>(50);
+        servicesByPrice = new SortedDoublyLinkedList[3];
+        for(int i = 0; i < 3; i++){
+            servicesByPrice[i]=new SortedDoublyLinkedList<>(new PriceComparator());
+        }
 
+        servicesByInsertion = new SinglyLinkedList<>();
+        servicesByName = new ClosedHashTable<>();
         // rating buckets: 5 possible averages (1..5) and 3 service types
-        servicesByRating = new DoublyLinkedList[5][3];
+        servicesByRating = new SinglyLinkedList[5][3];
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 3; j++) {
-                servicesByRating[i][j] = new DoublyLinkedList<>();
+                servicesByRating[i][j] = new SinglyLinkedList<>();
             }
         }
 
         // services grouped only by evaluation (to list by evaluation)
-        servicesByEvaluation = new DoublyLinkedList[5];
-
+        servicesByEvaluation = new SinglyLinkedList[5];
         for (int i = 0; i < 5; i++) {
-            servicesByEvaluation[i] = new DoublyLinkedList<>();
+            servicesByEvaluation[i] = new SinglyLinkedList<>();
         }
 
         this.locationOfArea = locationOfArea;
@@ -159,17 +161,11 @@ public class AreaClass implements Area, Serializable {
      * Name lookups
      */
     private ServiceClass getServiceByName(String name) {
-        for (int i = 0; i < servicesByInsertion.size(); i++) {
-            if (servicesByInsertion.get(i).getName().equalsIgnoreCase(name)) return servicesByInsertion.get(i);
-        }
-        return null;
+        return servicesByName.get(name);
     }
 
     private StudentClass getStudentByName(String name) {
-        for (int i = 0; i < students.size(); i++) {
-            if (students.get(i).getName().equalsIgnoreCase(name)) return students.get(i);
-        }
-        return null;
+        return studentsByName.get(name);
     }
 
     /**
@@ -238,16 +234,11 @@ public class AreaClass implements Area, Serializable {
 
         ServiceClass s = createService(type, serviceLocation, price, value, name);
 
-        // Add to insertion list and rating buckets and price-sorted structures
         servicesByInsertion.addLast(s);
         servicesByRating[s.getEvaluationAverage() - 1][type.getIndex()].addLast(s);
         servicesByEvaluation[s.getEvaluationAverage() - 1].addLast(s);
-
-        switch (s.getType()) {
-            case eating -> eatingServicesByPrice.add(s);
-            case lodging -> lodgingServicesByPrice.add(s);
-            case leisure -> leisureServicesByPrice.add(s);
-        }
+        servicesByName.put(name, s);
+        servicesByPrice[type.getIndex()].add(s);
     }
 
     /* --- Simple getters that delegate to Service/Student instances --- */
@@ -348,7 +339,7 @@ public class AreaClass implements Area, Serializable {
             private void advanceToNextNonEmptyBucket() {
                 bucketIt = null;
                 while (ratingIdx >= 0) {
-                    TwoWayList<ServiceClass> bucket = servicesByEvaluation[ratingIdx];
+                    List<ServiceClass> bucket = servicesByEvaluation[ratingIdx];
 
                     if (bucket != null && !bucket.isEmpty()) {
                         bucketIt = bucket.iterator();
@@ -367,7 +358,7 @@ public class AreaClass implements Area, Serializable {
                 ratingIdx--;
 
                 while (ratingIdx >= 0) {
-                    TwoWayList<ServiceClass> bucket = servicesByEvaluation[ratingIdx];
+                    List<ServiceClass> bucket = servicesByEvaluation[ratingIdx];
                     if (bucket != null && !bucket.isEmpty()) {
                         bucketIt = bucket.iterator();
                         return bucketIt.hasNext();
@@ -416,20 +407,7 @@ public class AreaClass implements Area, Serializable {
         if (stars < 1 || stars > 5) throw new InvalidEvaluationException();
 
         // ensure there are services of that type
-        switch (type) {
-            case eating -> {
-                if (eatingServicesByPrice.isEmpty())
-                    throw new NoServicesOfTheTypeException();
-            }
-            case lodging -> {
-                if (lodgingServicesByPrice.isEmpty())
-                    throw new NoServicesOfTheTypeException();
-            }
-            case leisure -> {
-                if (leisureServicesByPrice.isEmpty())
-                    throw new NoServicesOfTheTypeException();
-            }
-        }
+        if(servicesByPrice[type.getIndex()].isEmpty()) throw new NoServicesOfTheTypeException();
 
         if (servicesByRating[stars - 1][type.getIndex()].isEmpty())
             throw new NoServicesWithAverageException();
@@ -472,16 +450,16 @@ public class AreaClass implements Area, Serializable {
         if (student.getType() == StudentType.thrifty) {
             return switch (type) {
                 case eating -> {
-                    if (eatingServicesByPrice.isEmpty()) throw new NoEatingTypeServiceException();
-                    yield eatingServicesByPrice.getMin();
+                    if (servicesByPrice[type.getIndex()].isEmpty()) throw new NoEatingTypeServiceException();
+                    yield servicesByPrice[type.getIndex()].getMin();
                 }
                 case lodging -> {
-                    if (lodgingServicesByPrice.isEmpty()) throw new NoLodgingTypeServiceException();
-                    yield lodgingServicesByPrice.getMin();
+                    if (servicesByPrice[type.getIndex()].isEmpty()) throw new NoLodgingTypeServiceException();
+                    yield servicesByPrice[type.getIndex()].getMin();
                 }
                 case leisure -> {
-                    if (leisureServicesByPrice.isEmpty()) throw new NoLeisureTypeServiceException();
-                    yield leisureServicesByPrice.getMin();
+                    if (servicesByPrice[type.getIndex()].isEmpty()) throw new NoLeisureTypeServiceException();
+                    yield servicesByPrice[type.getIndex()].getMin();
                 }
             };
         }
@@ -490,7 +468,7 @@ public class AreaClass implements Area, Serializable {
         int typeIndex = type.getIndex();
 
         for (int ratingIndex = 4; ratingIndex >= 0; ratingIndex--) {
-            TwoWayList<ServiceClass> bucket = servicesByRating[ratingIndex][typeIndex];
+            List<ServiceClass> bucket = servicesByRating[ratingIndex][typeIndex];
             if (bucket != null && !bucket.isEmpty()) {
                 Iterator<ServiceClass> it = bucket.iterator();
                 if (it.hasNext()) return it.next();
@@ -579,7 +557,14 @@ public class AreaClass implements Area, Serializable {
         home.addStudent(s);
 
         students.addLast(s);
-        alphOrderStudents.add(s);
+        alphOrderStudents.put(name,s);
+        studentsByName.put(name,s);
+        SinglyLinkedList<StudentClass> list = studentsByCountry.get(country);
+        if (list == null) {
+            list = new SinglyLinkedList<>();
+            studentsByCountry.put(country, list);
+        }
+        list.addLast(s);
     }
 
     /**
@@ -589,30 +574,18 @@ public class AreaClass implements Area, Serializable {
      */
     @Override
     public void removeStudent(String name) throws NonExistingStudentException {
-        StudentClass student = null;
-
-        for (int i = 0; i < students.size(); i++) {
-            if (students.get(i).getName().equalsIgnoreCase(name)) {
-                student = students.get(i);
-                break;
-            }
-        }
-
-        if (student == null) throw new NonExistingStudentException();
-
-        // remove from students list (all occurrences) and sorted list
-        for (int i = 0; i < students.size(); i++) {
-            if (students.get(i).equals(student)) {
-                students.remove(i);
-            }
-        }
-        alphOrderStudents.remove(student);
-
+        StudentClass s = alphOrderStudents.remove(name);
+        if (s == null) throw new NonExistingStudentException();
+        studentsByName.remove(name);
+        students.remove(students.indexOf(s));
+        SinglyLinkedList<StudentClass> list = studentsByCountry.get(s.getCountry());
+        list.remove(list.indexOf(s));
+        if(list.isEmpty()) studentsByCountry.remove(s.getCountry());
         // remove from services they are present in
-        LodgingServiceClass home = student.getHome();
-        ServiceClass currentLocation = student.getCurrentLocation();
-        if (currentLocation instanceof EatingServiceClass e) e.removeStudent(student);
-        home.removeStudent(student);
+        LodgingServiceClass home = s.getHome();
+        ServiceClass currentLocation = s.getCurrentLocation();
+        if (currentLocation instanceof EatingServiceClass e) e.removeStudent(s);
+        home.removeStudent(s);
     }
 
     /**
@@ -727,13 +700,12 @@ public class AreaClass implements Area, Serializable {
      */
     @Override
     public Iterator<StudentClass> listStudentsByCountry(String country) throws NonExistingStudentFromCountryException {
-        Iterator<StudentClass> it = new FilterIterator<>(students.iterator(),
-                s -> s.getCountry().equalsIgnoreCase(country));
+        SinglyLinkedList<StudentClass> list = studentsByCountry.get(country);
 
-        if (!it.hasNext()) {
+        if (list.isEmpty()) {
             throw new NonExistingStudentFromCountryException();
         }
-        return it;
+        return list.iterator();
     }
 
     /**
@@ -746,7 +718,7 @@ public class AreaClass implements Area, Serializable {
         if (alphOrderStudents.isEmpty()) {
             throw new NonExistingStudentException();
         }
-        return alphOrderStudents.iterator();
+        return alphOrderStudents.values();
     }
 
     /**
@@ -811,7 +783,6 @@ public class AreaClass implements Area, Serializable {
         if (!it.hasNext()) {
             throw new NoServicesWithTagException();
         }
-
         return it;
     }
 }
