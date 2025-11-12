@@ -3,15 +3,14 @@
  * @author Ricardo Laur 68342 r.laur@campus.fct.unl.pt
  */
 package system;
-import dataStructures.Iterator;
-import dataStructures.ListInArray;
+import dataStructures.*;
 
 import java.io.Serializable;
 
 public abstract class LocationStoringStudentClass extends StudentClass implements LocationStoringStudent, Serializable {
     private static final long serialVersionUID = 0L;
 
-    private ListInArray<ServiceClass> visitedPlaces;
+    private List<ServiceClass> visitedPlaces;
 
     /**
      * Construct a LocationStoringStudentClass with initial home and metadata.
@@ -24,7 +23,7 @@ public abstract class LocationStoringStudentClass extends StudentClass implement
      */
     public LocationStoringStudentClass(String name, String country, LodgingServiceClass home, StudentType type) {
         super(name, country, home, type);
-        visitedPlaces = new ListInArray<>(50);
+        visitedPlaces = new SinglyLinkedList<>();
     }
 
     /**

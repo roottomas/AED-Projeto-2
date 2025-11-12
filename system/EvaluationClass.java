@@ -11,7 +11,6 @@ public class EvaluationClass implements Evaluation, Serializable {
 
     private List<EvaluationEntry> evaluations;
     private float average;
-    private long timeStamp;
     private int count;
     private int sumStars;
 
@@ -20,13 +19,12 @@ public class EvaluationClass implements Evaluation, Serializable {
      * A default evaluation with 4 stars and empty description is added to avoid empty averages.
      */
     public EvaluationClass() {
-        evaluations = new ListInArray<>(50);
+        evaluations = new SinglyLinkedList<>();
         EvaluationEntry defaultEntry = new EvaluationEntryClass(4, "");
         evaluations.addLast(defaultEntry);
         count = 1;
         sumStars = 4;
         average = 4.0f;
-        timeStamp = System.currentTimeMillis();
     }
 
     /**
@@ -41,7 +39,6 @@ public class EvaluationClass implements Evaluation, Serializable {
         sumStars += entry.getStars();
         count++;
         average = (float) sumStars / (float) count;
-        timeStamp = System.currentTimeMillis();
     }
 
     /**
@@ -52,11 +49,6 @@ public class EvaluationClass implements Evaluation, Serializable {
     @Override
     public float getAverage() {
         return average;
-    }
-
-    @Override
-    public long getLastUpdate(){
-        return timeStamp;
     }
 
     /**
