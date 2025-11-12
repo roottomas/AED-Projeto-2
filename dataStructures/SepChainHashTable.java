@@ -1,4 +1,5 @@
 package dataStructures;
+import dataStructures.exceptions.*;
 /**
  * SepChain Hash Table
  * @author AED  Team
@@ -42,6 +43,7 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
      * or null if the dictionary does not have an entry with that key
      */
     public V get(K key) {
+        if (key == null) throw new NoSuchElementException();
         int idx = hash(key);
         Map<K,V> bucket = table[idx];
         if (bucket == null) return null;
@@ -78,20 +80,21 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
 
 
     private void rehash() {
-        int oldCapacity = table.length;
+        int oldCapacity = (table == null ? 0 : table.length);
         int proposed = oldCapacity <= 1 ? 3 : oldCapacity * 2;
         int newCapacity = HashTable.nextPrime(proposed);
         if (newCapacity == 0) {
             newCapacity = proposed;
         }
 
+        @SuppressWarnings("unchecked")
         Map<K,V>[] newTable = makeTable(newCapacity);
 
         for (Map<K, V> bucket : table) {
             if (bucket == null) continue;
-            Iterator<Entry<K, V>> it = bucket.iterator();
+            Iterator<Map.Entry<K, V>> it = bucket.iterator();
             while (it.hasNext()) {
-                Entry<K, V> e = it.next();
+                Map.Entry<K, V> e = it.next();
                 int idx = Math.abs(e.key().hashCode()) % newTable.length;
                 Map<K, V> nb = newTable[idx];
                 if (nb == null) {
@@ -115,6 +118,7 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
      * or null if the dictionary does not an entry with that key
      */
     public V remove(K key) {
+        if (key == null) throw new NoSuchElementException();
         int idx = hash(key);
         Map<K,V> bucket = table[idx];
         if (bucket == null) return null;

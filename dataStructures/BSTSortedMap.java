@@ -53,21 +53,21 @@ public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V
      */
     @Override
     public V get(K key) {
-        Node<Entry<K,V>> node=getNode((BTNode<Entry<K,V>>)root,key);
-        if (node!=null)
-            return node.getElement().value();
-        return null;
+        BTNode<Map.Entry<K,V>> node = getNode((BTNode<Map.Entry<K,V>>) root, key);
+        return node == null ? null : node.getElement().value();
     }
 
-    private BTNode<Entry<K,V>> getNode(BTNode<Entry<K,V>> node, K key) {
-        if (node == null) return null;
-        K nodeKey = node.getElement().key();
-        int cmp = key.compareTo(nodeKey);
-        if (cmp == 0) return node;
-        if (cmp < 0)
-            return getNode((BTNode<Entry<K,V>>) node.getLeftChild(), key);
-        else
-            return getNode((BTNode<Entry<K,V>>) node.getRightChild(), key);
+    private BTNode<Map.Entry<K,V>> getNode(BTNode<Map.Entry<K,V>> node, K key) {
+        while (node != null) {
+            int cmp = key.compareTo(node.getElement().key());
+            if (cmp == 0)
+                return node;
+            else if (cmp < 0)
+                node = (BTNode<Map.Entry<K,V>>) node.getLeftChild();
+            else
+                node = (BTNode<Map.Entry<K,V>>) node.getRightChild();
+        }
+        return null;
     }
 
     protected BTNode<Entry<K,V>> createNode(Entry<K,V> entry, BTNode<Entry<K,V>> parent) {
@@ -176,6 +176,7 @@ public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V
      * @return iterator of the values in the dictionary
      */
     @Override
+    @SuppressWarnings({"unchecked","rawtypes"})
     public Iterator<V> values() {
         return new ValuesIterator(iterator());
     }
@@ -186,6 +187,7 @@ public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V
      * @return iterator of the keys in the dictionary
      */
     @Override
+    @SuppressWarnings({"unchecked","rawtypes"})
     public Iterator<K> keys() {
         return new KeysIterator(iterator());
     }
