@@ -4,6 +4,8 @@
  */
 
 import system.*;
+
+import java.util.Locale;
 import java.util.Scanner;
 import dataStructures.*;
 import java.io.File;
@@ -362,7 +364,7 @@ public class Main {
         }
         catch (ExistingServiceException e) {
             // if a service with the same name exists, print the canonical cased name
-            n = currentArea.getServiceCasedName(n);
+            n = currentArea.getServiceCasedName(n.toLowerCase());
             System.out.printf((SERVICE_ALREADY_EXISTS) + "%n", n);
         }
     }
@@ -412,7 +414,7 @@ public class Main {
         };
 
         String name = in.nextLine();
-        String country = in.nextLine();
+        String country = in.nextLine().toLowerCase();
         String lodgingName = in.nextLine();
 
         try {
@@ -429,7 +431,7 @@ public class Main {
             System.out.printf((LODGING_IS_FULL) + "%n", lodgingName);
         }
         catch (ExistingStudentException e) {
-            name = currentArea.getStudentCasedName(name);
+            name = currentArea.getStudentCasedName(name.toLowerCase());
             System.out.printf((STUDENT_ALREADY_EXISTS) + "%n", name);
         }
     }
@@ -452,11 +454,11 @@ public class Main {
      * @param currentArea current area
      */
     private static void processLeave(String[] line, Area currentArea) {
-        String name = currentArea.getStudentCasedName(buildString(1,line));
+        String name = currentArea.getStudentCasedName(buildString(1,line).toLowerCase());
         if (name == null) name = buildString(1,line);
 
         try {
-            currentArea.removeStudent(name);
+            currentArea.removeStudent(name.toLowerCase());
             System.out.printf((STUDENT_LEFT) + "%n", name);
         }
         catch (NonExistingStudentException e) {
@@ -493,7 +495,7 @@ public class Main {
             if (arg.equalsIgnoreCase("all")) {
                 it = currentArea.listAllStudentsAlphabetically();
             } else {
-                it = currentArea.listStudentsByCountry(arg);
+                it = currentArea.listStudentsByCountry(arg.toLowerCase());
             }
 
             while (it.hasNext()) {
@@ -523,17 +525,17 @@ public class Main {
      * @param line tokenized command line (first token is "go" and rest are student name)
      */
     private static void processGo(Scanner in, AreaClass currentArea, String[] line) {
-        String studentName = currentArea.getStudentCasedName(buildString(1,line));
+        String studentName = currentArea.getStudentCasedName(buildString(1,line).toLowerCase());
 
         if(studentName == null) studentName = buildString(1,line);
 
         String locationNamein = in.nextLine().trim();
-        String locationName = currentArea.getServiceCasedName(locationNamein);
+        String locationName = currentArea.getServiceCasedName(locationNamein.toLowerCase());
 
         if(locationName == null) locationName = locationNamein;
 
         try {
-            currentArea.goToLocation(studentName, locationName);
+            currentArea.goToLocation(studentName.toLowerCase(), locationName.toLowerCase());
             System.out.printf((GO_SUCCESS) + "%n", studentName, locationName);
 
         }
@@ -573,7 +575,7 @@ public class Main {
      * @param line tokenized command line (first token is "move" and rest are student name)
      */
     private static void processMove(Scanner in, AreaClass currentArea, String[] line) {
-        String studentName = currentArea.getStudentCasedName(buildString(1,line));
+        String studentName = currentArea.getStudentCasedName(buildString(1,line).toLowerCase());
 
         if (studentName == null) studentName = buildString(1,line);
 
@@ -582,7 +584,7 @@ public class Main {
         if (currentArea.getServiceCasedName(lodgingName) != null) lodgingName = currentArea.getServiceCasedName(lodgingName);
 
         try {
-            currentArea.moveStudentHome(studentName, lodgingName);
+            currentArea.moveStudentHome(studentName.toLowerCase(), lodgingName.toLowerCase());
             System.out.printf((MOVE_SUCCESS) + "%n", lodgingName, studentName, studentName);
 
         }
@@ -621,14 +623,14 @@ public class Main {
         String orderStr = line[1].trim();
         char order = orderStr.charAt(0);
 
-        String serviceName = currentArea.getServiceCasedName(buildString(2,line));
+        String serviceName = currentArea.getServiceCasedName(buildString(2,line).toLowerCase());
 
         if(serviceName == null) serviceName = buildString(2,line);
 
         try {
             if (order== '>') {
                 // forward iterator
-                Iterator<StudentClass> it = currentArea.listStudentsInService(order, serviceName);
+                Iterator<StudentClass> it = currentArea.listStudentsInService(order, serviceName.toLowerCase());
 
                 while (it.hasNext()) {
                     StudentClass s = it.next();
@@ -636,7 +638,7 @@ public class Main {
                 }
             } else {
                 // reverse iteration via two-way iterator - print in reverse order
-                TwoWayIterator<StudentClass> it = (TwoWayIterator<StudentClass>) currentArea.listStudentsInService(order, serviceName);
+                TwoWayIterator<StudentClass> it = (TwoWayIterator<StudentClass>) currentArea.listStudentsInService(order, serviceName.toLowerCase());
 
                 while (it.hasPrevious()) {
                     StudentClass s = it.previous();
@@ -666,14 +668,14 @@ public class Main {
      * @param currentArea current area
      */
     private static void processWhere(String[] line, AreaClass currentArea) {
-        String studentName = currentArea.getStudentCasedName(buildString(1,line));
+        String studentName = currentArea.getStudentCasedName(buildString(1,line).toLowerCase());
         if(studentName == null) studentName = buildString(1,line);
-
+        String lowername = studentName.toLowerCase();
         try {
-            String locName = currentArea.getStudentLocationNameByName(studentName);
-            String locType = currentArea.getStudentLocationTypeByName(studentName);
-            long lat = currentArea.getStudentLocationLatitudeByName(studentName);
-            long lon = currentArea.getStudentLocationLongitudeByName(studentName);
+            String locName = currentArea.getStudentLocationNameByName(lowername);
+            String locType = currentArea.getStudentLocationTypeByName(lowername);
+            long lat = currentArea.getStudentLocationLatitudeByName(lowername);
+            long lon = currentArea.getStudentLocationLongitudeByName(lowername);
 
             System.out.printf("%s is at %s %s (%d, %d).%n",
                     studentName, locName, locType, lat, lon);
@@ -691,12 +693,12 @@ public class Main {
      * @param currentArea current area
      */
     private static void processVisited(String[] line, AreaClass currentArea) {
-        String studentName = currentArea.getStudentCasedName(buildString(1,line));
+        String studentName = currentArea.getStudentCasedName(buildString(1,line).toLowerCase());
 
         if(studentName == null) studentName = buildString(1,line);
 
         try {
-            Iterator<ServiceClass> it = currentArea.listVisited(studentName);
+            Iterator<ServiceClass> it = currentArea.listVisited(studentName.toLowerCase());
             while (it.hasNext()) {
                 ServiceClass s = it.next();
                 System.out.println(currentArea.getServiceName(s));
@@ -728,7 +730,7 @@ public class Main {
         String description = in.nextLine();
 
         try {
-            currentArea.starService(stars, serviceName, description);
+            currentArea.starService(stars, serviceName.toLowerCase(), description);
             System.out.println(EVALUATION_REGISTERED);
 
         }
@@ -775,12 +777,12 @@ public class Main {
         String typeStr = line[1].trim().toLowerCase();
         int stars = Integer.parseInt(line[2].trim());
 
-        String studentName = currentArea.getStudentCasedName(buildString(3,line));
+        String studentName = currentArea.getStudentCasedName(buildString(3,line).toLowerCase());
 
         if(studentName == null) studentName = buildString(3,line);
 
         try {
-            Iterator<ServiceClass> it = currentArea.findServicesByRating(typeStr, stars, studentName);
+            Iterator<ServiceClass> it = currentArea.findServicesByRating(typeStr, stars, studentName.toLowerCase());
             System.out.printf((RANKED_HEADER) + "%n", typeStr, stars);
 
             while (it.hasNext()) {
@@ -841,7 +843,7 @@ public class Main {
         String serviceType = in.nextLine().trim();
 
         try {
-            ServiceClass service = currentArea.findRelevantServiceForStudent(studentName, serviceType);
+            ServiceClass service = currentArea.findRelevantServiceForStudent(studentName.toLowerCase(), serviceType);
             System.out.println(currentArea.getServiceName(service));
         }
         catch (InvalidServiceException ex) {

@@ -48,8 +48,8 @@ public class AreaClass implements Area, Serializable {
         // Initialize student structures
         alphOrderStudents = new AVLSortedMap<>();
         students = new SinglyLinkedList<>();
-        studentsByName = new SepChainHashTable<>();
-        studentsByCountry = new SepChainHashTable<>();
+        studentsByName = new SepChainHashTable<>(50);
+        studentsByCountry = new SepChainHashTable<>(50);
         // Initialize service lists
         servicesByPrice = new SortedDoublyLinkedList[3];
         for(int i = 0; i < 3; i++){
@@ -57,7 +57,7 @@ public class AreaClass implements Area, Serializable {
         }
 
         servicesByInsertion = new SinglyLinkedList<>();
-        servicesByName = new ClosedHashTable<>();
+        servicesByName = new ClosedHashTable<>(100);
         // rating buckets: 5 possible averages (1..5) and 3 service types
         servicesByRating = new SinglyLinkedList[5][3];
         for (int i = 0; i < 5; i++) {
@@ -214,7 +214,7 @@ public class AreaClass implements Area, Serializable {
         LocationClass serviceLocation = new LocationClass(latitude, longitude);
         if (!locationOfArea.contains(serviceLocation)) throw new LocationOutOfBoundsException();
 
-        if (serviceExists(name)) throw new ExistingServiceException();
+        if (serviceExists(name.toLowerCase())) throw new ExistingServiceException();
 
         // validate range/semantics for each service type
         switch (type) {
@@ -237,7 +237,7 @@ public class AreaClass implements Area, Serializable {
         servicesByInsertion.addLast(s);
         servicesByRating[s.getEvaluationAverage() - 1][type.getIndex()].addLast(s);
         servicesByEvaluation[s.getEvaluationAverage() - 1].addLast(s);
-        servicesByName.put(name, s);
+        servicesByName.put(name.toLowerCase(), s);
         servicesByPrice[type.getIndex()].add(s);
     }
 
@@ -549,7 +549,7 @@ public class AreaClass implements Area, Serializable {
         }
 
         if (home == null) throw new NonExistingLodgingServiceException();
-        if (studentExists(name)) throw new ExistingStudentException();
+        if (studentExists(name.toLowerCase())) throw new ExistingStudentException();
         if (!home.hasFreeRooms()) throw new FullLodgingServiceException();
 
         // create student and register them
@@ -557,8 +557,8 @@ public class AreaClass implements Area, Serializable {
         home.addStudent(s);
 
         students.addLast(s);
-        alphOrderStudents.put(name,s);
-        studentsByName.put(name,s);
+        alphOrderStudents.put(name.toLowerCase(),s);
+        studentsByName.put(name.toLowerCase(),s);
         SinglyLinkedList<StudentClass> list = studentsByCountry.get(country);
         if (list == null) {
             list = new SinglyLinkedList<>();
@@ -574,8 +574,8 @@ public class AreaClass implements Area, Serializable {
      */
     @Override
     public void removeStudent(String name) throws NonExistingStudentException {
+        if(alphOrderStudents.get(name) == null) throw new NonExistingStudentException();
         StudentClass s = alphOrderStudents.remove(name);
-        if (s == null) throw new NonExistingStudentException();
         studentsByName.remove(name);
         students.remove(students.indexOf(s));
         SinglyLinkedList<StudentClass> list = studentsByCountry.get(s.getCountry());
@@ -702,7 +702,7 @@ public class AreaClass implements Area, Serializable {
     public Iterator<StudentClass> listStudentsByCountry(String country) throws NonExistingStudentFromCountryException {
         SinglyLinkedList<StudentClass> list = studentsByCountry.get(country);
 
-        if (list.isEmpty()) {
+        if (list == null || list.isEmpty()) {
             throw new NonExistingStudentFromCountryException();
         }
         return list.iterator();

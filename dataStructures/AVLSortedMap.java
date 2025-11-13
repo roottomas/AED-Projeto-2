@@ -21,6 +21,7 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
         // locate the node we just inserted/updated (safe traversal from root)
         AVLNode<Entry<K,V>> node = locateNode((AVLNode<Entry<K,V>>) root, key);
         rebalanceUp(node);
+        currentSize++;
         return old;
     }
 
@@ -36,7 +37,7 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
         // rebalance from parent (or root)
         if (parent != null) rebalanceUp(parent);
         else if (root != null) rebalanceUp((AVLNode<Entry<K,V>>) root);
-
+        currentSize--;
         return old;
     }
 
@@ -57,6 +58,9 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
     private AVLNode<Entry<K, V>> tallerChild(AVLNode<Entry<K, V>> n) {
         AVLNode<Entry<K, V>> left = (AVLNode<Entry<K, V>>) n.getLeftChild();
         AVLNode<Entry<K, V>> right = (AVLNode<Entry<K, V>>) n.getRightChild();
+        if(left == null && right == null) return n;
+        if(left == null) return right;
+        if(right == null) return left;
         if (left.getHeight() >= right.getHeight()) return left;
         else return right;
     }
@@ -92,5 +96,10 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
                 cur = (AVLNode<Entry<K, V>>) cur.getParent();
             }
         }
+    }
+
+    @Override
+    protected BTNode<Map.Entry<K,V>> createNode(Map.Entry<K,V> entry, BTNode<Map.Entry<K,V>> parent) {
+        return new AVLNode<>(entry, (AVLNode<Map.Entry<K,V>>) parent);
     }
 }

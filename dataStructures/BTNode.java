@@ -47,8 +47,8 @@ class BTNode<E> implements Node<E> {
         this.parent = parent;
         this.leftChild = leftChild;
         this.rightChild = rightChild;
-        ((BTNode<E>) this.leftChild).setParent(this);
-        ((BTNode<E>) this.rightChild).setParent(this);
+        if(leftChild != null) ((BTNode<E>) this.leftChild).setParent(this);
+        if(rightChild != null) ((BTNode<E>) this.rightChild).setParent(this);
     }
 
     /**
