@@ -2,6 +2,11 @@ package dataStructures;
 
 import dataStructures.exceptions.*;
 import java.io.Serializable;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+import java.io.ClassNotFoundException;
+import java.io.Serial;
 
 public class SinglyLinkedList<E> implements List<E>, Serializable {
     /**
@@ -255,6 +260,52 @@ public class SinglyLinkedList<E> implements List<E>, Serializable {
         prev.setNext(curr.getNext());
         currentSize--;
         return old;
+    }
+
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        // save current state
+        SinglyListNode<E> savedHead = head;
+        SinglyListNode<E> savedTail = tail;
+        int savedSize = currentSize;
+
+        try {
+            // avoid serializing the recursive node graph
+            head = null;
+            tail = null;
+            currentSize = 0;
+            out.defaultWriteObject();          // writes non-node fields (now head/tail/currentSize are "empty")
+
+            // write logical contents explicitly
+            out.writeInt(savedSize);
+            SinglyListNode<E> curr = savedHead;
+            while (curr != null) {
+                out.writeObject(curr.getElement());
+                curr = curr.getNext();
+            }
+        } finally {
+            // restore in-memory state so object remains usable after serialization
+            head = savedHead;
+            tail = savedTail;
+            currentSize = savedSize;
+        }
+    }
+
+    @Serial
+    @SuppressWarnings("unchecked")
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        // read non-node fields (head/tail/currentSize will be whatever was written by defaultWriteObject(),
+        // but we wrote head/tail as null and currentSize as 0)
+        in.defaultReadObject();
+
+        // rebuild list from the serialized elements
+        int n = in.readInt();
+        head = tail = null;
+        currentSize = 0;
+        for (int i = 0; i < n; i++) {
+            E elem = (E) in.readObject();
+            addLast(elem); // will update head/tail/currentSize
+        }
     }
 
 }
