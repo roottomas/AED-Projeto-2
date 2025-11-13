@@ -13,10 +13,16 @@ import java.io.Serializable;
 public interface Map<K,V> extends Serializable {
 
     record Entry<K,V>(K key,V value) implements Serializable {
-        
+
         public boolean equals(Object obj) {
-           //TODO: Left as an exercise.
-            return false;
+            if (this==obj) return true;
+            if (obj==null) return false;
+            if (!(obj instanceof Entry))
+                return false;
+            //noinspection unchecked
+            K key=((Entry<K, V>)obj).key();
+            if (key==null) return false;
+            return key.equals(this.key());
 
         }
     }

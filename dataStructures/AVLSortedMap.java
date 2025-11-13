@@ -1,6 +1,10 @@
 package dataStructures;
 
 import dataStructures.exceptions.NoSuchElementException;
+import java.io.Serial;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
 
 /**
  * AVL Tree Sorted Map
@@ -101,5 +105,57 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
     @Override
     protected BTNode<Map.Entry<K,V>> createNode(Map.Entry<K,V> entry, BTNode<Map.Entry<K,V>> parent) {
         return new AVLNode<>(entry, (AVLNode<Map.Entry<K,V>>) parent);
+    }
+
+    private void writeEntries(ObjectOutputStream out, BTNode<Map.Entry<K,V>> node) throws IOException {
+        if (node == null) return;
+        // left
+        writeEntries(out, (BTNode<Entry<K,V>>) node.getLeftChild());
+        // node element
+        Map.Entry<K,V> e = node.getElement();
+        out.writeObject(e.key());
+        out.writeObject(e.value());
+        // right
+        writeEntries(out, (BTNode<Map.Entry<K,V>>) node.getRightChild());
+    }
+
+    private void readEntries(ObjectInputStream in, int n) throws IOException, ClassNotFoundException {
+        K key;
+        V value;
+        root = null;
+        currentSize = 0;
+        for (int i = 0; i < n; i++) {
+            key = (K) in.readObject();
+            value = (V) in.readObject();
+            put(key, value);
+        }
+    }
+
+    /**
+     * Custom serialization: avoid serializing the recursive node graph via defaultWriteObject
+     * by temporarily nulling `root`. Then serialize logical contents (size + key/value pairs).
+     */
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        BTNode<Map.Entry<K, V>> savedRoot = (BTNode<Entry<K, V>>) root;
+        try {
+            root = null;
+            out.defaultWriteObject();
+        } finally {
+            root = savedRoot;
+        }
+        out.writeInt(currentSize);
+        writeEntries(out, savedRoot);
+    }
+
+    /**
+     * Custom deserialization: read non-tree fields, then rebuild the AVL tree by reading entries
+     * and inserting them via put(...)
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        int n = in.readInt();
+        readEntries(in, n);
     }
 }
