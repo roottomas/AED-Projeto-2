@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
-import java.io.ClassNotFoundException;
 import java.io.Serial;
 
 public class SinglyLinkedList<E> implements List<E>, Serializable {
