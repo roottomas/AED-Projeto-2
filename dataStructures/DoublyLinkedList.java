@@ -24,15 +24,15 @@ public class DoublyLinkedList<E> implements TwoWayList<E> {
     /**
      *  Node at the head of the list.
      */
-    private DoublyListNode<E> head;
+    private transient DoublyListNode<E> head;
     /**
      * Node at the tail of the list.
      */
-    private DoublyListNode<E> tail;
+    private transient DoublyListNode<E> tail;
     /**
      * Number of elements in the list.
      */
-    private int currentSize;
+    private transient int currentSize;
 
     /**
      * Constructor of an empty double linked list.

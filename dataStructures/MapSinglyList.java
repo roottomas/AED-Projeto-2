@@ -1,6 +1,10 @@
 package dataStructures;
 
 import dataStructures.exceptions.NoSuchElementException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+import java.io.Serial;
 
 /**
  * Map with a singly linked list with head and size
@@ -12,9 +16,9 @@ import dataStructures.exceptions.NoSuchElementException;
 class MapSinglyList<K,V> implements Map<K, V> {
 
 
-    private SinglyListNode<Entry<K,V>> head;
+    private transient SinglyListNode<Entry<K,V>> head;
 
-    private int size;
+    private transient int size;
 
     public MapSinglyList() {
         head = null;
@@ -148,5 +152,59 @@ class MapSinglyList<K,V> implements Map<K, V> {
     @SuppressWarnings({"unchecked","rawtypes"})
     public Iterator<K> keys() {
         return (Iterator<K>) new KeysIterator(iterator());
+    }
+
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        // save current state
+        SinglyListNode<Entry<K,V>> savedHead = head;
+        int savedSize = size;
+
+        try {
+            // avoid serializing the recursive node graph
+            head = null;
+            size = 0;
+            out.defaultWriteObject();
+
+            // write logical contents explicitly (preserve order from head -> tail)
+            out.writeInt(savedSize);
+            SinglyListNode<Entry<K,V>> curr = savedHead;
+            while (curr != null) {
+                Entry<K,V> e = curr.getElement();
+                out.writeObject(e.key());
+                out.writeObject(e.value());
+                curr = curr.getNext();
+            }
+        } finally {
+            // restore runtime state
+            head = savedHead;
+            size = savedSize;
+        }
+    }
+
+    @Serial
+    @SuppressWarnings("unchecked")
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+
+        // read number of entries and rebuild the singly list preserving original order
+        int n = in.readInt();
+        head = null;
+        SinglyListNode<Entry<K,V>> tail = null;
+        size = 0;
+
+        for (int i = 0; i < n; i++) {
+            K key = (K) in.readObject();
+            V value = (V) in.readObject();
+            Entry<K,V> entry = new Entry<>(key, value);
+            SinglyListNode<Entry<K,V>> node = new SinglyListNode<>(entry, null);
+            if (head == null) {
+                head = tail = node;
+            } else {
+                tail.setNext(node);
+                tail = node;
+            }
+            size++;
+        }
     }
 }

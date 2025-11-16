@@ -1,6 +1,10 @@
 package dataStructures;
 
 import dataStructures.exceptions.*;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+import java.io.Serial;
 
 /**
  * Sorted Doubly linked list Implementation
@@ -13,22 +17,22 @@ public class SortedDoublyLinkedList<E> implements SortedList<E> {
     /**
      * Node at the head of the list.
      */
-    private DoublyListNode<E> head;
+    private transient DoublyListNode<E> head;
 
     /**
      * Node at the tail of the list.
      */
-    private DoublyListNode<E> tail;
+    private transient DoublyListNode<E> tail;
 
     /**
      * Number of elements in the list.
      */
-    private int currentSize;
+    private transient int currentSize;
 
     /**
      * Comparator of elements.
      */
-    private final Comparator<E> comparator;
+    private transient final Comparator<E> comparator;
 
     /**
      * Constructor of an empty sorted double linked list.
@@ -203,5 +207,31 @@ public class SortedDoublyLinkedList<E> implements SortedList<E> {
 
         currentSize--;
         return current.getElement();
+    }
+
+    @Serial
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject(); // write head, tail, currentSize
+        out.writeInt(currentSize); // write size explicitly (optional)
+        // Write elements in order
+        for (DoublyListNode<E> current = head; current != null; current = current.getNext()) {
+            out.writeObject(current.getElement());
+        }
+        // Note: comparator is transient and not serialized
+    }
+
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject(); // read head, tail, currentSize
+        int size = in.readInt();
+        head = tail = null;
+        currentSize = 0;
+
+        // Read elements and rebuild list
+        for (int i = 0; i < size; i++) {
+            @SuppressWarnings("unchecked")
+            E element = (E) in.readObject();
+            this.add(element); // Use add to rebuild links
+        }
     }
 }

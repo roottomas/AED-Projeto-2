@@ -11,15 +11,15 @@ public class SinglyLinkedList<E> implements List<E>, Serializable {
     /**
      *  Node at the head of the list.
      */
-    private SinglyListNode<E> head;
+    private transient SinglyListNode<E> head;
     /**
      * Node at the tail of the list.
      */
-    private SinglyListNode<E> tail;
+    private transient SinglyListNode<E> tail;
     /**
      * Number of elements in the list.
      */
-    private int currentSize;
+    private transient int currentSize;
     /**
      * Constructor of an empty singly linked list.
      * head and tail are initialized as null.

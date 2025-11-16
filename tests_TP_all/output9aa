@@ -7830,9 +7830,6 @@ leisure_14: 2
 eating_14: 2
 lodging_14: 2
 Exception in thread "main" java.lang.StackOverflowError
-	at java.base/java.io.ObjectOutputStream$ReplaceTable.lookup(ObjectOutputStream.java:2423)
-	at java.base/java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1129)
-	at java.base/java.io.ObjectOutputStream.defaultWriteFields(ObjectOutputStream.java:1585)
 	at java.base/java.io.ObjectOutputStream.writeSerialData(ObjectOutputStream.java:1542)
 	at java.base/java.io.ObjectOutputStream.writeOrdinaryObject(ObjectOutputStream.java:1451)
 	at java.base/java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1194)
@@ -8854,3 +8851,6 @@ Exception in thread "main" java.lang.StackOverflowError
 	at java.base/java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1194)
 	at java.base/java.io.ObjectOutputStream.defaultWriteFields(ObjectOutputStream.java:1585)
 	at java.base/java.io.ObjectOutputStream.writeSerialData(ObjectOutputStream.java:1542)
+	at java.base/java.io.ObjectOutputStream.writeOrdinaryObject(ObjectOutputStream.java:1451)
+	at java.base/java.io.ObjectOutputStream.writeObject0(ObjectOutputStream.java:1194)
+	at java.base/java.io.ObjectOutputStream.defaultWriteFields(ObjectOutputStream.java:1585)

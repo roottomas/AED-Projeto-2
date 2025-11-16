@@ -12,12 +12,12 @@ abstract class Tree<E> implements Serializable {
     /**
      * Root
      */
-    protected Node<E> root;
+    protected transient Node<E> root;
 
     /**
      * Number of elements
      */
-    protected int currentSize;
+    protected transient int currentSize;
 
     public Tree(){
         root=null;
