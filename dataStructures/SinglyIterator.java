@@ -1,48 +1,56 @@
 package dataStructures;
 
 import dataStructures.exceptions.NoSuchElementException;
+
 /**
- * Singly list Iterator
- * @author AED  Team
- * @version 1.0
- * @param <E> Generic element
+ * Iterator for a singly linked list (Singly Linked List)
+ * Iterates over all elements in the list starting from the first node.
+ *
+ * @param <E> Type of element stored in the list
+ *
+ * Author: AED Team
+ * Version: 1.0
  */
-class SinglyIterator<E>  implements Iterator<E> {
+class SinglyIterator<E> implements Iterator<E> {
 
-    /**
-     * First node of the list.
-     */
-    private SinglyListNode<E> first;
+    /** First node of the list (start of iteration) */
+    private final SinglyListNode<E> first;
 
-    /**
-     * Node with the next element in the iteration.
-     */
+    /** Node containing the next element to return */
     private SinglyListNode<E> nextToReturn;
 
-
     /**
-     * SinglyIterator constructor
-     * @param first - Node with the first element of the iteration
+     * Constructor of the iterator
+     *
+     * Time complexity: O(1)
+     * @param first Node containing the first element of the list
      */
     public SinglyIterator(SinglyListNode<E> first) {
-        this.first=first;
-        nextToReturn=first;
+        this.first = first;
+        this.nextToReturn = first;
     }
 
+    /**
+     * Returns true if there is a next element
+     *
+     * Time complexity: O(1)
+     * @return true if the list has more elements to iterate
+     */
     @Override
-    public boolean hasNext( ) {
+    public boolean hasNext() {
         return nextToReturn != null;
     }
 
     /**
-     * Returns the next element in the iteration.
+     * Returns the next element in the list
      *
-     * @return the next element in the iteration
-     * @throws NoSuchElementException - if call is made without verifying pre-condition
+     * Time complexity: O(1)
+     * @return the next element in the list
+     * @throws NoSuchElementException if there is no next element
      */
     @Override
-    public E next( ){
-        if ( !this.hasNext() )
+    public E next() {
+        if (!hasNext())
             throw new NoSuchElementException();
         E element = nextToReturn.getElement();
         nextToReturn = nextToReturn.getNext();
@@ -50,11 +58,12 @@ class SinglyIterator<E>  implements Iterator<E> {
     }
 
     /**
-     * Restart the iterator
+     * Restarts the iteration to the beginning of the list
+     *
+     * Time complexity: O(1)
      */
     @Override
     public void rewind() {
-        nextToReturn=first;
+        nextToReturn = first;
     }
-
 }

@@ -1,77 +1,85 @@
 package dataStructures;
+
 import dataStructures.exceptions.*;
+
 /**
- * Closed Hash Table
- * @author AED  Team
+ * Closed Hash Table (Open Addressing)
+ *
+ * @author AED Team
  * @version 1.0
  * @param <K> Generic Key
  * @param <V> Generic Value
  */
 public class ClosedHashTable<K,V> extends HashTable<K,V> {
 
-    //Load factors
-    static final float IDEAL_LOAD_FACTOR =0.5f;
-    static final float MAX_LOAD_FACTOR =0.8f;
-    static final int NOT_FOUND=-1;
+    static final float IDEAL_LOAD_FACTOR = 0.5f;
+    static final float MAX_LOAD_FACTOR = 0.8f;
+    static final int NOT_FOUND = -1;
+    static final Entry<?,?> REMOVED_CELL = new Entry<>(null, null);
 
-    // removed cell
-    static final Entry<?,?> REMOVED_CELL = new Entry<>(null,null);
-
-    // The array of entries.
+    /** Array of entries */
     private Entry<K,V>[] table;
 
     /**
-     * Constructors
+     * Default constructor
+     * Time complexity: O(n)
      */
-
-    public ClosedHashTable( ){
+    public ClosedHashTable() {
         this(DEFAULT_CAPACITY);
     }
 
+    /**
+     * Constructor with capacity
+     *
+     * @param capacity initial capacity
+     * Time complexity: O(n)
+     */
     @SuppressWarnings("unchecked")
-    public ClosedHashTable( int capacity ){
+    public ClosedHashTable(int capacity) {
         super(capacity);
         int arraySize = HashTable.nextPrime((int) (capacity / IDEAL_LOAD_FACTOR));
-        // Compiler gives a warning.
         table = (Entry<K,V>[]) new Entry[arraySize];
-        for ( int i = 0; i < arraySize; i++ )
+        for (int i = 0; i < arraySize; i++)
             table[i] = null;
-        maxSize = (int)(arraySize * MAX_LOAD_FACTOR);
+        maxSize = (int) (arraySize * MAX_LOAD_FACTOR);
     }
 
-    //Methods for handling collisions.
-    // Returns the hash value of the specified key.
-    int hash( K key, int i ){
-        return Math.abs( key.hashCode() + i) % table.length;
-    }
     /**
-     * Linear Proving
-     * @param key to search
-     * @return the index of the table, where is the entry with the specified key, or null
+     * Computes the hash for a given key and probing step
+     *
+     * @param key key to hash
+     * @param i probing step
+     * @return hash position
+     * Time complexity: O(1)
+     */
+    int hash(K key, int i) {
+        return Math.abs(key.hashCode() + i) % table.length;
+    }
+
+    /**
+     * Searches for a key using linear probing
+     *
+     * @param key key to search
+     * @return index in table or NOT_FOUND
+     * Time complexity: O(n)
      */
     int searchLinearProving(K key) {
         for (int i = 0; i < table.length; i++) {
             int idx = hash(key, i);
             Entry<K,V> e = table[idx];
-            if (e == null) {
-                return NOT_FOUND;
-            }
-            if (e == REMOVED_CELL) {
-                continue;
-            }
+            if (e == null) return NOT_FOUND;
+            if (e == REMOVED_CELL) continue;
             if (e.key().equals(key)) return idx;
         }
         return NOT_FOUND;
     }
 
-    
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * returns its value; otherwise, returns null.
+     * Returns the value associated with a key, or null if not found
      *
-     * @param key whose associated value is to be returned
-     * @return value of entry in the dictionary whose key is the specified key,
-     * or null if the dictionary does not have an entry with that key
+     * @param key key to search
+     * @return value associated with key or null
+     * Time complexity: O(n)
      */
     @Override
     public V get(K key) {
@@ -81,19 +89,17 @@ public class ClosedHashTable<K,V> extends HashTable<K,V> {
     }
 
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * replaces its value by the specified value and returns the old value;
-     * otherwise, inserts the entry (key, value) and returns null.
+     * Inserts or updates a key-value pair
      *
-     * @param key   with which the specified value is to be associated
-     * @param value to be associated with the specified key
-     * @return previous value associated with key,
-     * or null if the dictionary does not have an entry with that key
+     * @param key key to insert/update
+     * @param value value to associate
+     * @return old value if replaced, or null
+     * Time complexity: O(n)
      */
     @Override
     public V put(K key, V value) {
-        if (isFull())
-            rehash();
+        if (isFull()) rehash();
+
         int firstRemoved = NOT_FOUND;
         for (int i = 0; i < table.length; i++) {
             int idx = hash(key, i);
@@ -125,43 +131,47 @@ public class ClosedHashTable<K,V> extends HashTable<K,V> {
         return put(key, value);
     }
 
-     private void rehash(){
-         int oldLen = table.length;
-         int proposed = Math.max(3, oldLen * 2);
-         int newLen = HashTable.nextPrime(proposed);
-         if (newLen == 0) newLen = proposed; // fallback
-         @SuppressWarnings("unchecked")
-         Entry<K,V>[] newTable = (Entry<K,V>[]) new Entry[newLen];
-
-         for (Entry<K, V> e : table) {
-             if (e == null || e == REMOVED_CELL) continue;
-             K key = e.key();
-             for (int j = 0; j < newTable.length; j++) {
-                 int idx = Math.abs(key.hashCode() + j) % newTable.length;
-                 if (newTable[idx] == null) {
-                     newTable[idx] = new Entry<>(key, e.value());
-                     break;
-                 }
-             }
-         }
-         table = newTable;
-         maxSize = (int)(table.length * MAX_LOAD_FACTOR);
-     }
-
-   
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * removes it from the dictionary and returns its value;
-     * otherwise, returns null.
+     * Rehashes the table by expanding and reinserting all entries
+     * Time complexity: O(n)
+     */
+    private void rehash() {
+        int oldLen = table.length;
+        int proposed = Math.max(3, oldLen * 2);
+        int newLen = HashTable.nextPrime(proposed);
+        if (newLen == 0) newLen = proposed;
+
+        @SuppressWarnings("unchecked")
+        Entry<K,V>[] newTable = (Entry<K,V>[]) new Entry[newLen];
+
+        for (Entry<K, V> e : table) {
+            if (e == null || e == REMOVED_CELL) continue;
+            K key = e.key();
+            for (int j = 0; j < newTable.length; j++) {
+                int idx = Math.abs(key.hashCode() + j) % newTable.length;
+                if (newTable[idx] == null) {
+                    newTable[idx] = new Entry<>(key, e.value());
+                    break;
+                }
+            }
+        }
+
+        table = newTable;
+        maxSize = (int) (table.length * MAX_LOAD_FACTOR);
+    }
+
+    /**
+     * Removes the entry with the specified key
      *
-     * @param key whose entry is to be removed from the map
-     * @return previous value associated with key,
-     * or null if the dictionary does not an entry with that key
+     * @param key key to remove
+     * @return old value associated with key, or null
+     * Time complexity: O(n)
      */
     @Override
     public V remove(K key) {
         int idx = searchLinearProving(key);
         if (idx == NOT_FOUND) return null;
+
         V old = table[idx].value();
         @SuppressWarnings("unchecked")
         Entry<K,V> removedMarker = (Entry<K,V>) REMOVED_CELL;
@@ -171,37 +181,68 @@ public class ClosedHashTable<K,V> extends HashTable<K,V> {
     }
 
     /**
-     * Returns an iterator of the entries in the dictionary.
+     * Returns an iterator over the entries
      *
-     * @return iterator of the entries in the dictionary
+     * @return iterator of entries
+     * Time complexity: O(1)
      */
     @Override
     public Iterator<Entry<K, V>> iterator() {
         return new ClosedHashTableIterator();
     }
 
+    /**
+     * Iterator for ClosedHashTable
+     */
     private class ClosedHashTableIterator implements Iterator<Entry<K,V>> {
-        private int index;
-        public ClosedHashTableIterator() { rewind(); }
 
+        private int index;
+
+        /**
+         * Constructor: rewinds to first valid entry
+         * Time complexity: O(n)
+         */
+        public ClosedHashTableIterator() {
+            rewind();
+        }
+
+        /**
+         * Returns true if there is a next entry
+         *
+         * @return true if more elements exist
+         * Time complexity: O(1)
+         */
         @Override
         public boolean hasNext() {
             return index < table.length;
         }
 
+        /**
+         * Returns the next valid entry
+         *
+         * @return next entry
+         * @throws NoSuchElementException if none available
+         * Time complexity: O(1)
+         */
         @Override
         public Entry<K,V> next() {
             while (index < table.length) {
                 Entry<K,V> e = table[index++];
-                if (e != null && e != REMOVED_CELL) return e;
+                if (e != null && e != REMOVED_CELL)
+                    return e;
             }
             throw new NoSuchElementException();
         }
 
+        /**
+         * Rewinds the iterator to the first valid entry
+         * Time complexity: O(n)
+         */
         @Override
         public void rewind() {
             index = 0;
-            while (index < table.length && (table[index] == null || table[index] == REMOVED_CELL)) index++;
+            while (index < table.length && (table[index] == null || table[index] == REMOVED_CELL))
+                index++;
         }
     }
 }

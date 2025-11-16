@@ -1,78 +1,67 @@
-/**
- * @author Tomás Silvestre 68594 tm.silvestre@campus.fct.unl.pt
- * @author Ricardo Laur 68342 r.laur@campus.fct.unl.pt
- */
-
 package dataStructures;
+
 import dataStructures.exceptions.NoSuchElementException;
 
 /**
- * Implementation of Two Way Iterator for DLList
- * @author AED  Team
+ * Two-way iterator for Doubly Linked List (DLList)
+ *
+ * @author AED Team
  * @version 1.0
  * @param <E> Generic Element
- *
  */
 class DoublyIterator<E> implements Iterator<E> {
-    /**
-     * Node with the first element in the iteration.
-     */
-    private DoublyListNode<E> firstNode;
+
+    /** Node with the first element in the iteration */
+    private final DoublyListNode<E> firstNode;
+
+    /** Node with the next element to be returned */
+    private DoublyListNode<E> nextToReturn;
 
     /**
-     * Node with the next element in the iteration.
-     */
-    DoublyListNode<E> nextToReturn;
-
-
-    /**
-     * DoublyIterator constructor
+     * Constructor: initializes the iterator to start at the given node.
      *
      * Time complexity: O(1)
-     *
-     * @param first - Node with the first element of the iteration
+     * @param first Node with the first element of the iteration
      */
     public DoublyIterator(DoublyListNode<E> first) {
         this.firstNode = first;
         this.nextToReturn = first;
-
     }
+
     /**
      * Returns the next element in the iteration.
      *
      * Time complexity: O(1)
-     *
      * @return the next element in the iteration
-     * @throws NoSuchElementException - if call is made without verifying pre-condition
+     * @throws NoSuchElementException if there is no next element
      */
-    public E next( ){
-        if(!hasNext()){
+    @Override
+    public E next() {
+        if (!hasNext())
             throw new NoSuchElementException();
-        }
         E elem = nextToReturn.getElement();
         nextToReturn = nextToReturn.getNext();
         return elem;
     }
 
     /**
-     * Restart the iterator
+     * Restarts the iteration to the first element.
      *
      * Time complexity: O(1)
      */
+    @Override
     public void rewind() {
         nextToReturn = firstNode;
-
     }
+
     /**
-     * Returns true if next would return an element
-     * rather than throwing an exception.
+     * Returns true if the iteration has more elements.
      *
      * Time complexity: O(1)
-     *
      * @return true iff the iteration has more elements
      */
-    public boolean hasNext( ) {
+    @Override
+    public boolean hasNext() {
         return nextToReturn != null;
     }
 }
-

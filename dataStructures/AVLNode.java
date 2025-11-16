@@ -1,7 +1,8 @@
 package dataStructures;
+
 /**
  * AVL Tree Node
- * @author AED  Team
+ * @author AED Team
  * @version 1.0
  * @param <E> Generic Element
  */
@@ -11,56 +12,67 @@ class AVLNode<E> extends BTNode<E> {
 
     public AVLNode(E elem) {
         super(elem);
-        height=0;
+        height = 0;
     }
-    
-    public AVLNode( E element, AVLNode<E> parent,
-                    AVLNode<E> left, AVLNode<E> right ){
-        super(element,parent,left,right);
+
+    public AVLNode(E element, AVLNode<E> parent,
+                   AVLNode<E> left, AVLNode<E> right) {
+        super(element, parent, left, right);
         int leftH = height(left);
         int rightH = height(right);
         this.height = 1 + Math.max(leftH, rightH);
     }
-    public AVLNode( E element, AVLNode<E> parent){
-        super(element, parent,null, null);
-        height= 0;
+
+    public AVLNode(E element, AVLNode<E> parent) {
+        super(element, parent, null, null);
+        height = 0;
     }
 
+    /**
+     * Computes the height of a given node.
+     * @param no the node whose height is requested
+     * Time complexity: O(1)
+     * @return height of node, -1 if null
+     */
     private int height(AVLNode<E> no) {
-        if (no==null)	return -1;
+        if (no == null) return -1;
         return no.getHeight();
     }
+
+    /**
+     * Returns the height of this node.
+     * Time complexity: O(1)
+     * @return height of this node
+     */
     public int getHeight() {
         return height;
     }
 
     /**
      * Update the left child and height
-     * @param node
+     * @param node new left child
+     * Time complexity: O(1)
      */
     public void setLeftChild(AVLNode<E> node) {
         super.setLeftChild(node);
-        // maintain parent pointer of child
         if (node != null) node.setParent(this);
-        // recalculate this node height
         updateHeight();
     }
 
     /**
      * Update the right child and height
-     * @param node
+     * @param node new right child
+     * Time complexity: O(1)
      */
     public void setRightChild(AVLNode<E> node) {
-        // update pointer in superclass
         super.setRightChild(node);
-        // maintain parent pointer of child
         if (node != null) node.setParent(this);
-        // recalculate this node height
         updateHeight();
     }
 
     /**
      * Recomputes this node height from its children.
+     * Time complexity: O(1)
      */
     public void updateHeight() {
         AVLNode<E> left = (AVLNode<E>) getLeftChild();
@@ -71,8 +83,9 @@ class AVLNode<E> extends BTNode<E> {
     }
 
     /**
-     * Balance factor = height(left) - height(right)
-     * positive => left heavier, negative => right heavier
+     * Balance factor = height(left) - height(right).
+     * Positive => left subtree heavier; negative => right subtree heavier.
+     * Time complexity: O(1)
      * @return balance factor
      */
     public int getBalanceFactor() {
@@ -80,6 +93,4 @@ class AVLNode<E> extends BTNode<E> {
         AVLNode<E> right = (AVLNode<E>) getRightChild();
         return height(left) - height(right);
     }
-// others public methods
-//TODO: Left as an exercise.
 }

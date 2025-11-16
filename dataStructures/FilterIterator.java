@@ -1,8 +1,3 @@
-/**
- * @author Tomás Silvestre 68594 tm.silvestre@campus.fct.unl.pt
- * @author Ricardo Laur 68342 r.laur@campus.fct.unl.pt
- */
-
 package dataStructures;
 
 import dataStructures.exceptions.NoSuchElementException;
@@ -33,24 +28,26 @@ public class FilterIterator<E> implements Iterator<E> {
     E nextToReturn;
 
     /**
+     * Construct a FilterIterator over a given list using a given filter.
+     *
+     * Time complexity: O(1)
      *
      * @param list to be iterated
-     * @param filter
+     * @param filter filter to apply to each element
      */
     public FilterIterator(Iterator<E> list, Predicate<E> filter) {
-        iterator = list;
+        this.iterator = list;
         this.filter = filter;
         rewind();
     }
 
     /**
-     * Returns true if next would return an element
+     * Returns true if next would return an element.
+     *
+     * Time complexity: O(1) amortized per returned element.
+     * Worst-case: O(n) if many non-matching elements must be scanned.
      *
      * @return true iff the iteration has more elements
-     *
-     * Time complexity: O(1) per returned element.
-     * Worst-case (when scanning many non-matching elements): O(n) where n is number
-     * of underlying elements scanned until a match is found.
      */
     public boolean hasNext() {
         while (nextToReturn == null && iterator.hasNext()) {
@@ -66,13 +63,15 @@ public class FilterIterator<E> implements Iterator<E> {
     /**
      * Returns the next element in the iteration.
      *
+     * Time complexity: O(1)
+     *
      * @return the next element in the iteration
      * @throws NoSuchElementException - if call is made without verifying pre-condition
-     *
-     * Time complexity: O(1)
      */
     public E next() {
-        if (nextToReturn == null) throw new NoSuchElementException();
+        if (nextToReturn == null)
+            throw new NoSuchElementException();
+
         E current = nextToReturn;
         nextToReturn = null;
         return current;

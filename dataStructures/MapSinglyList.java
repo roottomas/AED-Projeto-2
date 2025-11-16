@@ -7,55 +7,62 @@ import java.io.IOException;
 import java.io.Serial;
 
 /**
- * Map with a singly linked list with head and size
- * @author AED  Team
- * @version 1.0
- * @param <K> Generic Key
- * @param <V> Generic Value
+ * Map implemented with a singly linked list.
+ * Each node stores an Entry<K,V> (key, value).
+ *
+ * @param <K> Key type
+ * @param <V> Value type
  */
-class MapSinglyList<K,V> implements Map<K, V> {
+public class MapSinglyList<K,V> implements Map<K, V> {
 
-
+    /** Head of the singly linked list */
     private transient SinglyListNode<Entry<K,V>> head;
 
+    /** Number of elements in the map */
     private transient int size;
 
+    /**
+     * Empty constructor.
+     * Initializes an empty list.
+     *
+     * Time complexity: O(1)
+     */
     public MapSinglyList() {
         head = null;
         size = 0;
     }
 
     /**
-     * Returns true iff the dictionary contains no entries.
+     * Returns true if the map is empty.
      *
-     * @return true if dictionary is empty
+     * Time complexity: O(1)
+     * @return true if map has no elements
      */
-
     public boolean isEmpty() {
         return size == 0;
     }
 
     /**
-     * Returns the number of entries in the dictionary.
+     * Returns the number of entries in the map.
      *
-     * @return number of elements in the dictionary
+     * Time complexity: O(1)
+     * @return number of elements
      */
-    @Override
     public int size() {
         return size;
     }
 
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * returns its value; otherwise, returns null.
+     * Returns the value associated with the specified key.
+     * Returns null if the key does not exist or is null.
      *
-     * @param key whose associated value is to be returned
-     * @return value of entry in the dictionary whose key is the specified key,
-     * or null if the dictionary does not have an entry with that key
+     * Time complexity: O(n) worst case
+     * @param key key to search
+     * @return value associated with key or null
      */
-    @Override
     public V get(K key) {
         if (key == null) return null;
+
         SinglyListNode<Entry<K,V>> curr = head;
         while (curr != null) {
             Entry<K,V> e = curr.getElement();
@@ -65,19 +72,21 @@ class MapSinglyList<K,V> implements Map<K, V> {
         return null;
     }
 
-
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * replaces its value by the specified value and returns the old value;
-     * otherwise, inserts the entry (key, value) and returns null.
+     * Inserts or updates a (key, value) pair in the map.
+     * If the key exists, replaces the value and returns the old value.
+     * If not, inserts at the head and returns null.
      *
-     * @param key   with which the specified value is to be associated
-     * @param value to be associated with the specified key
-     * @return previous value associated with key,
-     * or null if the dictionary does not have an entry with that key
+     * Time complexity:
+     * - Update: O(n)
+     * - Insertion: O(1)
+     * @param key key
+     * @param value value
+     * @return old value if key existed, null otherwise
      */
-
     public V put(K key, V value) {
+        if (key == null) throw new IllegalArgumentException("Key cannot be null");
+
         SinglyListNode<Entry<K,V>> curr = head;
         while (curr != null) {
             Entry<K,V> e = curr.getElement();
@@ -88,24 +97,27 @@ class MapSinglyList<K,V> implements Map<K, V> {
             }
             curr = curr.getNext();
         }
+
+        // Insert at head
         head = new SinglyListNode<>(new Entry<>(key, value), head);
         size++;
         return null;
     }
 
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * removes it from the dictionary and returns its value;
-     * otherwise, returns null.
+     * Removes the entry with the specified key.
+     * Returns the removed value or null if not found.
      *
-     * @param key whose entry is to be removed from the map
-     * @return previous value associated with key,
-     * or null if the dictionary does not an entry with that key
+     * Time complexity: O(n)
+     * @param key key to remove
+     * @return removed value or null
      */
-    public V remove(K key) throws NoSuchElementException {
-        if (key == null) throw new NoSuchElementException();
+    public V remove(K key) {
+        if (key == null) return null;
+
         SinglyListNode<Entry<K,V>> curr = head;
         SinglyListNode<Entry<K,V>> prev = null;
+
         while (curr != null) {
             Entry<K,V> e = curr.getElement();
             if (e.key().equals(key)) {
@@ -125,48 +137,50 @@ class MapSinglyList<K,V> implements Map<K, V> {
     }
 
     /**
-     * Returns an iterator of the entries in the dictionary.
+     * Returns an iterator over the map entries.
      *
-     * @return iterator of the entries in the dictionary
+     * Time complexity: O(1) to create, O(n) to iterate all elements
+     * @return iterator over Entry<K,V>
      */
     public Iterator<Entry<K, V>> iterator() {
         return new SinglyIterator<>(head);
     }
 
     /**
-     * Returns an iterator of the values in the dictionary.
+     * Returns an iterator over the map values.
      *
-     * @return iterator of the values in the dictionary
+     * Time complexity: O(1) to create, O(n) to iterate all elements
+     * @return iterator over V
      */
-
     @SuppressWarnings({"unchecked","rawtypes"})
     public Iterator<V> values() {
         return (Iterator<V>) new ValuesIterator(iterator());
     }
 
     /**
-     * Returns an iterator of the keys in the dictionary.
+     * Returns an iterator over the map keys.
      *
-     * @return iterator of the keys in the dictionary
+     * Time complexity: O(1) to create, O(n) to iterate all elements
+     * @return iterator over K
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     public Iterator<K> keys() {
         return (Iterator<K>) new KeysIterator(iterator());
     }
 
+    /**
+     * Custom serialization to preserve the linked list.
+     */
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
-        // save current state
         SinglyListNode<Entry<K,V>> savedHead = head;
         int savedSize = size;
 
         try {
-            // avoid serializing the recursive node graph
             head = null;
             size = 0;
             out.defaultWriteObject();
 
-            // write logical contents explicitly (preserve order from head -> tail)
             out.writeInt(savedSize);
             SinglyListNode<Entry<K,V>> curr = savedHead;
             while (curr != null) {
@@ -176,18 +190,19 @@ class MapSinglyList<K,V> implements Map<K, V> {
                 curr = curr.getNext();
             }
         } finally {
-            // restore runtime state
             head = savedHead;
             size = savedSize;
         }
     }
 
+    /**
+     * Custom deserialization to reconstruct the linked list.
+     */
     @Serial
     @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
 
-        // read number of entries and rebuild the singly list preserving original order
         int n = in.readInt();
         head = null;
         SinglyListNode<Entry<K,V>> tail = null;

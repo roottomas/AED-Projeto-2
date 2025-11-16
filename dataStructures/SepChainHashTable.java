@@ -1,46 +1,50 @@
 package dataStructures;
+
 import dataStructures.exceptions.*;
+
 /**
- * SepChain Hash Table
- * @author AED  Team
- * @version 1.0
- * @param <K> Generic Key
- * @param <V> Generic Value
+ * Hash table with separate chaining collision resolution.
+ *
+ * @param <K> Key type
+ * @param <V> Value type
  */
 public class SepChainHashTable<K,V> extends HashTable<K,V> {
 
-    //Load factors
-    static final float IDEAL_LOAD_FACTOR =0.75f;
-    static final float MAX_LOAD_FACTOR =0.9f;
+    // Load factors
+    static final float IDEAL_LOAD_FACTOR = 0.75f;
+    static final float MAX_LOAD_FACTOR = 0.9f;
 
-    // The array of Map with singly linked list.
+    /** Array of buckets, each bucket is a Map based on a list */
     private Map<K,V>[] table;
 
-    public SepChainHashTable( ){
+    /** Default constructor */
+    public SepChainHashTable() {
         super(DEFAULT_CAPACITY);
+        table = makeTable((int) (DEFAULT_CAPACITY * IDEAL_LOAD_FACTOR));
     }
-    
-    public SepChainHashTable( int capacity ){
+
+    /** Constructor with initial capacity */
+    public SepChainHashTable(int capacity) {
         super(capacity);
         table = makeTable((int) (capacity * IDEAL_LOAD_FACTOR));
     }
 
+    /** Creates a generic Map array */
     @SuppressWarnings("unchecked")
     private static <K,V> Map<K,V>[] makeTable(int length) {
         return (Map<K,V>[]) java.lang.reflect.Array.newInstance(Map.class, length);
     }
 
-    // Returns the hash value of the specified key.
-    protected int hash( K key ){
-        return Math.abs( key.hashCode() ) % table.length;
+    /** Returns the hash index for a key */
+    protected int hash(K key) {
+        return Math.abs(key.hashCode()) % table.length;
     }
+
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * returns its value; otherwise, returns null.
+     * Returns the value associated with the key, or null if it does not exist.
      *
-     * @param key whose associated value is to be returned
-     * @return value of entry in the dictionary whose key is the specified key,
-     * or null if the dictionary does not have an entry with that key
+     * Time complexity (average): O(1 + α), where α is the load factor
+     * @return value associated with the key or null
      */
     public V get(K key) {
         if (key == null) throw new NoSuchElementException();
@@ -51,18 +55,15 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
     }
 
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * replaces its value by the specified value and returns the old value;
-     * otherwise, inserts the entry (key, value) and returns null.
+     * Inserts or updates the key with the given value.
      *
-     * @param key   with which the specified value is to be associated
-     * @param value to be associated with the specified key
-     * @return previous value associated with key,
-     * or null if the dictionary does not have an entry with that key
+     * Time complexity (average): O(1 + α)
+     * @param key the key to insert/update
+     * @param value the value to associate with the key
+     * @return previous value associated with the key, or null if none
      */
     public V put(K key, V value) {
-        if (isFull())
-            rehash();
+        if (isFull()) rehash();
 
         int idx = hash(key);
         Map<K,V> bucket = table[idx];
@@ -72,20 +73,16 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
         }
 
         V old = bucket.put(key, value);
-        if (old == null) {
-            currentSize++;
-        }
+        if (old == null) currentSize++;
         return old;
     }
 
-
+    /** Rehashes the table when the maximum load factor is reached */
     private void rehash() {
         int oldCapacity = (table == null ? 0 : table.length);
         int proposed = oldCapacity <= 1 ? 3 : oldCapacity * 2;
         int newCapacity = HashTable.nextPrime(proposed);
-        if (newCapacity == 0) {
-            newCapacity = proposed;
-        }
+        if (newCapacity == 0) newCapacity = proposed;
 
         @SuppressWarnings("unchecked")
         Map<K,V>[] newTable = makeTable(newCapacity);
@@ -96,7 +93,7 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
             while (it.hasNext()) {
                 Map.Entry<K, V> e = it.next();
                 int idx = Math.abs(e.key().hashCode()) % newTable.length;
-                Map<K, V> nb = newTable[idx];
+                Map<K,V> nb = newTable[idx];
                 if (nb == null) {
                     nb = new MapSinglyList<>();
                     newTable[idx] = nb;
@@ -104,18 +101,17 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
                 nb.put(e.key(), e.value());
             }
         }
+
         table = newTable;
         this.maxSize = (int) (table.length * MAX_LOAD_FACTOR);
     }
 
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * removes it from the dictionary and returns its value;
-     * otherwise, returns null.
+     * Removes the value associated with the key.
      *
-     * @param key whose entry is to be removed from the map
-     * @return previous value associated with key,
-     * or null if the dictionary does not an entry with that key
+     * Time complexity (average): O(1 + α)
+     * @param key key to remove
+     * @return value previously associated with the key, or null if none
      */
     public V remove(K key) {
         if (key == null) throw new NoSuchElementException();
@@ -128,13 +124,12 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
     }
 
     /**
-     * Returns an iterator of the entries in the dictionary.
+     * Returns an iterator over all (key, value) pairs in the table.
      *
-     * @return iterator of the entries in the dictionary
+     * Time complexity: O(n), n = number of elements
+     * @return iterator over all entries
      */
     public Iterator<Entry<K, V>> iterator() {
         return new SepChainHashTableIterator<>(table);
     }
-
-
 }

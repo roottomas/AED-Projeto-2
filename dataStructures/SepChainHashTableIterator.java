@@ -1,24 +1,31 @@
 package dataStructures;
-/**
- * SepChain Hash Table Iterator
- * @author AED  Team
- * @version 1.0
- * @param <K> Generic Key
- * @param <V> Generic Value
- */
+
 import dataStructures.exceptions.NoSuchElementException;
 
+/**
+ * Iterator for SepChainHashTable
+ * Iterates over all elements in the hash table (all buckets).
+ *
+ * @param <K> Key type
+ * @param <V> Value type
+ */
 class SepChainHashTableIterator<K,V> implements Iterator<Map.Entry<K,V>> {
 
-    // The array of bucket maps (each bucket is a MapSinglyList)
+    /** Array of buckets (each bucket is a Map) */
     private final Map<K,V>[] table;
 
-    // Current position in the table
+    /** Current index in the array of buckets */
     private int currentIndex;
 
-    // Iterator for the current bucket
+    /** Iterator of the current bucket */
     private Iterator<Map.Entry<K,V>> currentIterator;
 
+    /**
+     * Constructor: initializes the iterator pointing to the first non-empty bucket
+     *
+     * Time complexity: O(1)
+     * @param table array of buckets
+     */
     public SepChainHashTableIterator(Map<K,V>[] table) {
         this.table = table;
         this.currentIndex = -1;
@@ -27,7 +34,9 @@ class SepChainHashTableIterator<K,V> implements Iterator<Map.Entry<K,V>> {
     }
 
     /**
-     * Move to the next non-empty bucket.
+     * Advances to the next non-empty bucket
+     *
+     * Time complexity: O(n) in worst case, O(1) on average
      */
     private void advanceToNextBucket() {
         currentIterator = null;
@@ -43,13 +52,13 @@ class SepChainHashTableIterator<K,V> implements Iterator<Map.Entry<K,V>> {
     }
 
     /**
-     * Returns true if next would return an element
-     * rather than throwing an exception.
+     * Returns true if there is a next element
      *
-     * @return true iff the iteration has more elements
+     * Time complexity: O(1) on average
+     * @return true if the iterator has more elements
      */
     public boolean hasNext() {
-        if (currentIterator.hasNext()) return true;
+        if (currentIterator != null && currentIterator.hasNext()) return true;
 
         int tempIndex = currentIndex + 1;
         while (tempIndex < table.length) {
@@ -61,23 +70,25 @@ class SepChainHashTableIterator<K,V> implements Iterator<Map.Entry<K,V>> {
     }
 
     /**
-     * Returns the next element in the iteration.
+     * Returns the next element in the iterator
      *
-     * @return the next element in the iteration
-     * @throws NoSuchElementException - if call is made without verifying pre-condition
+     * Time complexity: O(1) on average
+     * @return next element in the iterator
+     * @throws NoSuchElementException if no element exists
      */
     public Map.Entry<K,V> next() {
-        if (!currentIterator.hasNext()) {
+        if (currentIterator == null || !currentIterator.hasNext()) {
             advanceToNextBucket();
-            if (!currentIterator.hasNext())
+            if (currentIterator == null || !currentIterator.hasNext())
                 throw new NoSuchElementException();
         }
         return currentIterator.next();
     }
 
     /**
-     * Restarts the iteration.
-     * After rewind, if the iteration is not empty, next will return the first element.
+     * Restarts the iteration
+     *
+     * Time complexity: O(1)
      */
     public void rewind() {
         currentIndex = -1;
@@ -85,4 +96,3 @@ class SepChainHashTableIterator<K,V> implements Iterator<Map.Entry<K,V>> {
         advanceToNextBucket();
     }
 }
-

@@ -1,26 +1,28 @@
 package dataStructures;
 
 import dataStructures.exceptions.EmptyMapException;
+
 /**
  * Binary Search Tree Sorted Map
- * @author AED  Team
+ * @author AED Team
  * @version 1.0
  * @param <K> Generic Key
  * @param <V> Generic Value
  */
-public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V>> implements SortedMap<K,V>{
+public class BSTSortedMap<K extends Comparable<K>, V> extends BTree<Map.Entry<K, V>> implements SortedMap<K, V> {
 
     /**
      * Constructor
      */
-    public BSTSortedMap(){
+    public BSTSortedMap() {
         super();
     }
+
     /**
      * Returns the entry with the smallest key in the dictionary.
-     *
-     * @return
-     * @throws EmptyMapException
+     * @throws EmptyMapException if the tree is empty
+     * Time complexity: O(log n)
+     * @return Entry with the smallest key
      */
     @Override
     public Entry<K, V> minEntry() {
@@ -31,9 +33,9 @@ public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V
 
     /**
      * Returns the entry with the largest key in the dictionary.
-     *
-     * @return
-     * @throws EmptyMapException
+     * @throws EmptyMapException if the tree is empty
+     * Time complexity: O(log n)
+     * @return Entry with the largest key
      */
     @Override
     public Entry<K, V> maxEntry() {
@@ -42,59 +44,57 @@ public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V
         return furtherRightElement().getElement();
     }
 
-
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * returns its value; otherwise, returns null.
-     *
+     * Returns the value associated with the specified key, or null if not present.
      * @param key whose associated value is to be returned
-     * @return value of entry in the dictionary whose key is the specified key,
-     * or null if the dictionary does not have an entry with that key
+     * Time complexity: O(log n)
+     * @return value of entry in the dictionary whose key is the specified key, or null if not found
      */
     @Override
     public V get(K key) {
-        BTNode<Map.Entry<K,V>> node = getNode((BTNode<Map.Entry<K,V>>) root, key);
+        BTNode<Map.Entry<K, V>> node = getNode((BTNode<Map.Entry<K, V>>) root, key);
         return node == null ? null : node.getElement().value();
     }
 
-    private BTNode<Map.Entry<K,V>> getNode(BTNode<Map.Entry<K,V>> node, K key) {
+    private BTNode<Map.Entry<K, V>> getNode(BTNode<Map.Entry<K, V>> node, K key) {
         while (node != null) {
             int cmp = key.compareTo(node.getElement().key());
-            if (cmp == 0)
-                return node;
-            else if (cmp < 0)
-                node = (BTNode<Map.Entry<K,V>>) node.getLeftChild();
-            else
-                node = (BTNode<Map.Entry<K,V>>) node.getRightChild();
+            if (cmp == 0) return node;
+            node = (cmp < 0) ? (BTNode<Map.Entry<K, V>>) node.getLeftChild()
+                    : (BTNode<Map.Entry<K, V>>) node.getRightChild();
         }
         return null;
     }
 
-    protected BTNode<Entry<K,V>> createNode(Entry<K,V> entry, BTNode<Entry<K,V>> parent) {
+    /**
+     * Create a new node for the BST.
+     * @param entry Entry to store
+     * @param parent Parent of the new node
+     * Time complexity: O(1)
+     * @return the newly created node
+     */
+    protected BTNode<Entry<K, V>> createNode(Entry<K, V> entry, BTNode<Entry<K, V>> parent) {
         return new BTNode<>(entry, parent);
     }
 
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * replaces its value by the specified value and returns the old value;
-     * otherwise, inserts the entry (key, value) and returns null.
-     *
-     * @param key   with which the specified value is to be associated
+     * Inserts a key-value pair or updates the value if key exists.
+     * @param key with which the specified value is to be associated
      * @param value to be associated with the specified key
-     * @return previous value associated with key,
-     * or null if the dictionary does not have an entry with that key
+     * Time complexity: O(log n)
+     * @return previous value associated with key, or null if not present
      */
     @Override
     public V put(K key, V value) {
-        Map.Entry<K,V> newEntry = new Map.Entry<>(key, value);
+        Map.Entry<K, V> newEntry = new Map.Entry<>(key, value);
 
         if (isEmpty()) {
             root = createNode(newEntry, null);
             return null;
         }
 
-        BTNode<Entry<K,V>> parent = null;
-        BTNode<Entry<K,V>> curr = (BTNode<Entry<K,V>>) root;
+        BTNode<Entry<K, V>> parent = null;
+        BTNode<Entry<K, V>> curr = (BTNode<Entry<K, V>>) root;
         int cmp = 0;
 
         while (curr != null) {
@@ -107,72 +107,69 @@ public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V
                 curr.setElement(new Map.Entry<>(key, value));
                 return old;
             } else if (cmp < 0) {
-                curr = (BTNode<Entry<K,V>>) curr.getLeftChild();
+                curr = (BTNode<Entry<K, V>>) curr.getLeftChild();
             } else {
-                curr = (BTNode<Entry<K,V>>) curr.getRightChild();
+                curr = (BTNode<Entry<K, V>>) curr.getRightChild();
             }
         }
 
         // insert as child of parent
-        BTNode<Entry<K,V>> newNode = createNode(newEntry, null);
-        if (cmp < 0) {
-            parent.setLeftChild(newNode);
-        } else {
-            parent.setRightChild(newNode);
-        }
+        BTNode<Entry<K, V>> newNode = createNode(newEntry, parent);
+        if (cmp < 0) parent.setLeftChild(newNode);
+        else parent.setRightChild(newNode);
+
         return null;
     }
 
-
     /**
-     * If there is an entry in the dictionary whose key is the specified key,
-     * removes it from the dictionary and returns its value;
-     * otherwise, returns null.
-     *
+     * Removes the entry associated with the specified key.
      * @param key whose entry is to be removed from the map
-     * @return previous value associated with key,
-     * or null if the dictionary does not an entry with that key
+     * Time complexity: O(log n)
+     * @return previous value associated with key, or null if not found
      */
     @Override
     public V remove(K key) {
-        BTNode<Entry<K,V>> node = getNode((BTNode<Entry<K,V>>) root, key);
+        BTNode<Entry<K, V>> node = getNode((BTNode<Entry<K, V>>) root, key);
+        if (node == null) return null;
         V old = node.getElement().value();
 
-        // case: no left child => replace node with right child
+        // no left child
         if (node.getLeftChild() == null) {
             transplant(node, node.getRightChild());
         }
-        // case: no right child => replace node with left child
+        // no right child
         else if (node.getRightChild() == null) {
             transplant(node, node.getLeftChild());
-        } else {
-            // two children: get successor (leftmost of right subtree)
-            BTNode<Entry<K,V>> succ = furtherLeftElement((BTNode<Entry<K,V>>) node.getRightChild());
+        }
+        // two children
+        else {
+            BTNode<Entry<K, V>> succ = furtherLeftElement((BTNode<Entry<K, V>>) node.getRightChild());
             if (succ.getParent() != node) {
                 transplant(succ, succ.getRightChild());
                 succ.setRightChild(node.getRightChild());
-                ((BTNode<Entry<K,V>>) succ.getRightChild()).setParent(succ);
+                ((BTNode<Entry<K, V>>) succ.getRightChild()).setParent(succ);
             }
             transplant(node, succ);
             succ.setLeftChild(node.getLeftChild());
-            ((BTNode<Entry<K,V>>) succ.getLeftChild()).setParent(succ);
+            ((BTNode<Entry<K, V>>) succ.getLeftChild()).setParent(succ);
         }
+
         return old;
     }
 
     /**
      * Returns an iterator of the entries in the dictionary.
-     *
+     * Time complexity: O(1) to create, O(n) to iterate fully
      * @return iterator of the entries in the dictionary
      */
     @Override
     public Iterator<Entry<K, V>> iterator() {
-        return new InOrderIterator<>((BTNode<Entry<K,V>>) root);
+        return new InOrderIterator<>((BTNode<Entry<K, V>>) root);
     }
 
     /**
      * Returns an iterator of the values in the dictionary.
-     *
+     * Time complexity: O(1) to create, O(n) to iterate fully
      * @return iterator of the values in the dictionary
      */
     @Override
@@ -183,7 +180,7 @@ public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V
 
     /**
      * Returns an iterator of the keys in the dictionary.
-     *
+     * Time complexity: O(1) to create, O(n) to iterate fully
      * @return iterator of the keys in the dictionary
      */
     @Override

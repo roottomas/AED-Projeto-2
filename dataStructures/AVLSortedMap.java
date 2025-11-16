@@ -8,117 +8,150 @@ import java.io.IOException;
 
 /**
  * AVL Tree Sorted Map
- * @author AED  Team
+ * @author AED Team
  * @version 1.0
  * @param <K> Generic Key
  * @param <V> Generic Value
  */
-public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V>{
+public class AVLSortedMap<K extends Comparable<K>, V> extends AdvancedBSTree<K, V> {
 
-    public AVLSortedMap(){
+    public AVLSortedMap() {
         super();
     }
 
+    /**
+     * Insert or update a key-value pair in the map.
+     * @param key Key to insert or update
+     * @param value Value to insert
+     * Time complexity: O(log n)
+     * @return The old value if the key already existed, or null otherwise
+     */
     @Override
     public V put(K key, V value) {
         V old = super.put(key, value);
-        // locate the node we just inserted/updated (safe traversal from root)
-        AVLNode<Entry<K,V>> node = locateNode((AVLNode<Entry<K,V>>) root, key);
+        AVLNode<Entry<K, V>> node = locateNode((AVLNode<Entry<K, V>>) root, key);
         rebalanceUp(node);
         currentSize++;
         return old;
     }
 
+    /**
+     * Remove an entry by key from the map.
+     * @param key whose entry is to be removed from the map
+     * Time complexity: O(log n)
+     * @return The removed value if the key existed, or null otherwise
+     */
     @Override
     public V remove(K key) throws NoSuchElementException {
-        // locate node before removal so we can have the parent to start rebalancing
-        AVLNode<Entry<K,V>> node = locateNode((AVLNode<Entry<K,V>>) root, key);
+        AVLNode<Entry<K, V>> node = locateNode((AVLNode<Entry<K, V>>) root, key);
         if (node == null) throw new NoSuchElementException();
-        AVLNode<Entry<K,V>> parent = (AVLNode<Entry<K,V>>) node.getParent();
+        AVLNode<Entry<K, V>> parent = (AVLNode<Entry<K, V>>) node.getParent();
 
         V old = super.remove(key);
 
-        // rebalance from parent (or root)
         if (parent != null) rebalanceUp(parent);
-        else if (root != null) rebalanceUp((AVLNode<Entry<K,V>>) root);
+        else if (root != null) rebalanceUp((AVLNode<Entry<K, V>>) root);
         currentSize--;
         return old;
     }
 
     /**
-     * Locate node by key starting at startNode (BTNode) and return it as AVLNode (or null).
+     * Locate node by key starting from a given node.
+     * @param startNode initial position for the search
+     * @param key key to look for
+     * Time complexity: O(log n)
+     * @return the AVLNode containing the key, or null if not found
      */
-    private AVLNode<Entry<K,V>> locateNode(AVLNode<Entry<K,V>> startNode, K key) {
-        AVLNode<Entry<K,V>> current = startNode;
+    private AVLNode<Entry<K, V>> locateNode(AVLNode<Entry<K, V>> startNode, K key) {
+        AVLNode<Entry<K, V>> current = startNode;
         while (current != null) {
             int cmp = key.compareTo(current.getElement().key());
             if (cmp == 0) return current;
-            current = (cmp < 0) ? (AVLNode<Entry<K,V>>) current.getLeftChild()
-                    : (AVLNode<Entry<K,V>>) current.getRightChild();
+            current = (cmp < 0) ? (AVLNode<Entry<K, V>>) current.getLeftChild()
+                    : (AVLNode<Entry<K, V>>) current.getRightChild();
         }
         return null;
     }
 
+    /**
+     * Returns the child of a node with greater height.
+     * @param n parent node
+     * Time complexity: O(1)
+     * @return left or right child, whichever is taller
+     */
     private AVLNode<Entry<K, V>> tallerChild(AVLNode<Entry<K, V>> n) {
         AVLNode<Entry<K, V>> left = (AVLNode<Entry<K, V>>) n.getLeftChild();
         AVLNode<Entry<K, V>> right = (AVLNode<Entry<K, V>>) n.getRightChild();
-        if(left == null && right == null) return n;
-        if(left == null) return right;
-        if(right == null) return left;
-        if (left.getHeight() >= right.getHeight()) return left;
-        else return right;
+        if (left == null && right == null) return n;
+        if (left == null) return right;
+        if (right == null) return left;
+        return (left.getHeight() >= right.getHeight()) ? left : right;
     }
 
     /**
-     * Walk up from node, update heights, and when |balance|>1 perform tri-node restructure.
+     * Walk upward from a node, updating heights and restoring AVL balance when needed.
+     * @param node starting point for rebalancing
+     * Time complexity: O(log n)
      */
-    private void rebalanceUp(AVLNode<Entry<K,V>> node) {
+    private void rebalanceUp(AVLNode<Entry<K, V>> node) {
         AVLNode<Entry<K, V>> cur = node;
         while (cur != null) {
-            // recompute height for cur (children might have changed)
             cur.updateHeight();
             int bf = cur.getBalanceFactor();
             if (Math.abs(bf) > 1) {
-                // find y = taller child of cur (z), x = taller child of y
                 AVLNode<Entry<K, V>> y = tallerChild(cur);
                 AVLNode<Entry<K, V>> x = tallerChild(y);
-                AVLNode<Entry<K, V>> newRoot;
-                newRoot = (AVLNode<Entry<K, V>>) restructure(x);
+                AVLNode<Entry<K, V>> newRoot = (AVLNode<Entry<K, V>>) restructure(x);
 
-                // update heights in the rotated subtree: children then root
-                AVLNode<Entry<K, V>> newRootAVL = newRoot;
-                AVLNode<Entry<K, V>> left = (AVLNode<Entry<K, V>>) newRootAVL.getLeftChild();
-                AVLNode<Entry<K, V>> right = (AVLNode<Entry<K, V>>) newRootAVL.getRightChild();
+                AVLNode<Entry<K, V>> left = (AVLNode<Entry<K, V>>) newRoot.getLeftChild();
+                AVLNode<Entry<K, V>> right = (AVLNode<Entry<K, V>>) newRoot.getRightChild();
                 if (left != null) left.updateHeight();
                 if (right != null) right.updateHeight();
-                newRootAVL.updateHeight();
+                newRoot.updateHeight();
 
-                // continue from parent of the subtree root (could be null -> done)
-                cur = (AVLNode<Entry<K, V>>) newRootAVL.getParent();
+                cur = (AVLNode<Entry<K, V>>) newRoot.getParent();
             } else {
-                // no imbalance here: move to parent
                 cur = (AVLNode<Entry<K, V>>) cur.getParent();
             }
         }
     }
 
+    /**
+     * Create a new AVL node for the map.
+     * @param entry key-value pair
+     * @param parent parent node
+     * Time complexity: O(1)
+     * @return newly created AVLNode
+     */
     @Override
-    protected BTNode<Map.Entry<K,V>> createNode(Map.Entry<K,V> entry, BTNode<Map.Entry<K,V>> parent) {
-        return new AVLNode<>(entry, (AVLNode<Map.Entry<K,V>>) parent);
+    protected BTNode<Map.Entry<K, V>> createNode(Map.Entry<K, V> entry, BTNode<Map.Entry<K, V>> parent) {
+        return new AVLNode<>(entry, (AVLNode<Map.Entry<K, V>>) parent);
     }
 
-    private void writeEntries(ObjectOutputStream out, BTNode<Map.Entry<K,V>> node) throws IOException {
+    /**
+     * Writes all entries of the subtree rooted at node in-order.
+     * @param out output stream
+     * @param node root of subtree
+     * @throws IOException if writing fails
+     * Time complexity: O(n)
+     */
+    private void writeEntries(ObjectOutputStream out, BTNode<Map.Entry<K, V>> node) throws IOException {
         if (node == null) return;
-        // left
-        writeEntries(out, (BTNode<Entry<K,V>>) node.getLeftChild());
-        // node element
-        Map.Entry<K,V> e = node.getElement();
+        writeEntries(out, (BTNode<Entry<K, V>>) node.getLeftChild());
+        Map.Entry<K, V> e = node.getElement();
         out.writeObject(e.key());
         out.writeObject(e.value());
-        // right
-        writeEntries(out, (BTNode<Map.Entry<K,V>>) node.getRightChild());
+        writeEntries(out, (BTNode<Map.Entry<K, V>>) node.getRightChild());
     }
 
+    /**
+     * Reads n entries from a stream and inserts them into the AVL.
+     * @param in input stream
+     * @param n number of entries to read
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * Time complexity: O(n log n)
+     */
     private void readEntries(ObjectInputStream in, int n) throws IOException, ClassNotFoundException {
         K key;
         V value;
@@ -132,8 +165,10 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
     }
 
     /**
-     * Custom serialization: avoid serializing the recursive node graph via defaultWriteObject
-     * by temporarily nulling `root`. Then serialize logical contents (size + key/value pairs).
+     * Custom serialization: writes map size and all entries.
+     * @param out output stream
+     * @throws IOException
+     * Time complexity: O(n)
      */
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -149,8 +184,11 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
     }
 
     /**
-     * Custom deserialization: read non-tree fields, then rebuild the AVL tree by reading entries
-     * and inserting them via put(...)
+     * Custom deserialization: rebuilds the AVL tree from serialized entries.
+     * @param in input stream
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * Time complexity: O(n log n)
      */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {

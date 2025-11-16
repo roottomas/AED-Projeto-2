@@ -1,7 +1,10 @@
 package dataStructures;
+
 /**
- * Binary Tree
- * @author AED  Team
+ * Abstract Binary Tree
+ * Provides basic binary tree operations.
+ *
+ * @author AED Team
  * @version 1.0
  * @param <E> Generic Element
  */
@@ -9,20 +12,24 @@ abstract class BTree<E> extends Tree<E> {
 
     /**
      * Returns the height of the tree.
+     *
+     * @return height of the tree, 0 if empty
+     * Time complexity: O(n) for a general tree
      */
     public int getHeight() {
-        if(isEmpty())
+        if (isEmpty())
             return 0;
-        return ((BTNode<E>)root).getHeight();
+        return ((BTNode<E>) root).getHeight();
     }
 
     /**
-     * Return the further left node of the tree
-     * @return further left node of the tree
+     * Returns the leftmost node of the tree.
+     *
+     * @return leftmost node, or null if tree is empty
+     * Time complexity: O(h), h = height of tree
      */
     BTNode<E> furtherLeftElement() {
         if (isEmpty()) return null;
-
         BTNode<E> node = (BTNode<E>) root;
         while (node.getLeftChild() != null) {
             node = (BTNode<E>) node.getLeftChild();
@@ -31,12 +38,13 @@ abstract class BTree<E> extends Tree<E> {
     }
 
     /**
-     * Return the further right node of the tree
-     * @return further right node of the tree
+     * Returns the rightmost node of the tree.
+     *
+     * @return rightmost node, or null if tree is empty
+     * Time complexity: O(h), h = height of tree
      */
     BTNode<E> furtherRightElement() {
         if (isEmpty()) return null;
-
         BTNode<E> node = (BTNode<E>) root;
         while (node.getRightChild() != null) {
             node = (BTNode<E>) node.getRightChild();
@@ -44,6 +52,13 @@ abstract class BTree<E> extends Tree<E> {
         return node;
     }
 
+    /**
+     * Returns the leftmost node starting from a given node.
+     *
+     * @param start node to start from
+     * @return leftmost descendant from start, or null if start is null
+     * Time complexity: O(h), h = height of subtree
+     */
     protected BTNode<E> furtherLeftElement(BTNode<E> start) {
         if (start == null) return null;
         BTNode<E> node = start;
@@ -53,6 +68,13 @@ abstract class BTree<E> extends Tree<E> {
         return node;
     }
 
+    /**
+     * Returns the rightmost node starting from a given node.
+     *
+     * @param start node to start from
+     * @return rightmost descendant from start, or null if start is null
+     * Time complexity: O(h), h = height of subtree
+     */
     protected BTNode<E> furtherRightElement(BTNode<E> start) {
         if (start == null) return null;
         BTNode<E> node = start;
@@ -62,7 +84,13 @@ abstract class BTree<E> extends Tree<E> {
         return node;
     }
 
-    // 2) transplant: replaces subtree u with v. v may be null.
+    /**
+     * Replaces subtree rooted at u with subtree rooted at v.
+     *
+     * @param u node to replace
+     * @param v replacement subtree (can be null)
+     * Time complexity: O(1)
+     */
     protected void transplant(BTNode<E> u, Node<E> v) {
         BTNode<E> uParent = (BTNode<E>) u.getParent();
         if (u.isRoot()) {
@@ -78,5 +106,4 @@ abstract class BTree<E> extends Tree<E> {
             if (v != null) ((BTNode<E>) v).setParent(uParent);
         }
     }
-    //new methods: Left as an exercise.
 }

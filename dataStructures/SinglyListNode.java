@@ -1,76 +1,76 @@
 package dataStructures;
+
 import java.io.Serializable;
 
 /**
  * Singly List Node Implementation
- * @author AED  Team
- * @version 1.0
+ * Node used in a singly linked list.
  * @param <E> Generic Element
- *
  */
 class SinglyListNode<E> implements Serializable {
-    /**
-     * Serial Version UID of the Class
-     */
+
+    /** Serial Version UID of the Class */
     static final long serialVersionUID = 0L;
 
-    /**
-     * Element stored in the node.
-     */
+    /** Element stored in the node */
     private E element;
 
-    /**
-     * (Pointer to) the next node.
-     */
+    /** Reference to the next node */
     private SinglyListNode<E> next;
 
     /**
-     *
-     * @param theElement - The element to be contained in the node
-     * @param theNext - the next node
+     * Constructor with element and next node reference
+     * Time complexity: O(1)
+     * @param theElement The element to store
+     * @param theNext The next node in the list
      */
-    public SinglyListNode( E theElement, SinglyListNode<E> theNext ) {
+    public SinglyListNode(E theElement, SinglyListNode<E> theNext) {
         element = theElement;
         next = theNext;
     }
 
     /**
-     *
-     * @param theElement to be contained in the node
+     * Constructor with only element (next is null)
+     * Time complexity: O(1)
+     * @param theElement The element to store
      */
-    public SinglyListNode( E theElement ) {
+    public SinglyListNode(E theElement) {
         this(theElement, null);
     }
 
     /**
-     *
-     * @return the element contained in the node
+     * Returns the element contained in this node
+     * Time complexity: O(1)
+     * @return element in node
      */
-    public E getElement( ) {
+    public E getElement() {
         return element;
     }
 
     /**
-     *
-     * @return the next node
+     * Returns the next node in the list
+     * Time complexity: O(1)
+     * @return reference to next node
      */
-    public SinglyListNode<E> getNext( ) {
+    public SinglyListNode<E> getNext() {
         return next;
     }
 
     /**
-     *
-     * @param newElement - New element to replace the current element
+     * Updates the element stored in this node
+     * Time complexity: O(1)
+     * @param newElement New element to store
      */
-    public void setElement( E newElement ) {
+    public void setElement(E newElement) {
         element = newElement;
     }
 
     /**
-     *
-     * @param newNext - node to replace the next node
+     * Updates the reference to the next node
+     * Time complexity: O(1)
+     * @param newNext New next node reference
      */
-    public void setNext( SinglyListNode<E> newNext ) {
+    public void setNext(SinglyListNode<E> newNext) {
         next = newNext;
     }
 }
