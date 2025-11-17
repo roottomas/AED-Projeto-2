@@ -104,57 +104,47 @@ public class RedBlackSortedMap<K extends Comparable<K>, V> extends AdvancedBSTre
         RBNode<Entry<K, V>> z = (RBNode<Entry<K, V>>) found;
         V oldValue = z.getElement().value();
 
-        RBNode<Entry<K, V>> y = z;
-        Color yOriginalColor = y.getColor();
-        RBNode<Entry<K, V>> x = null;
-
-        if (z.getLeftChild() == null) {
-            Node<Entry<K, V>> rawRight = z.getRightChild();
-            x = (rawRight instanceof RBNode) ? (RBNode<Entry<K, V>>) rawRight : null;
-            transplant(z, rawRight);
-        } else if (z.getRightChild() == null) {
-            Node<Entry<K, V>> rawLeft = z.getLeftChild();
-            x = (rawLeft instanceof RBNode) ? (RBNode<Entry<K, V>>) rawLeft : null;
-            transplant(z, rawLeft);
-        } else {
+        RBNode<Entry<K, V>> noRem = z;
+        if (z.getLeftChild() != null && z.getRightChild() != null) {
             @SuppressWarnings("unchecked")
             BTNode<Entry<K, V>> succBt = (BTNode<Entry<K, V>>) z.getRightChild();
             BTNode<Entry<K, V>> succ = succBt.furtherLeftElement();
-
-            if (!(succ instanceof RBNode)) {
-                throw new IllegalStateException();
-            }
-
             @SuppressWarnings("unchecked")
-            RBNode<Entry<K, V>> ySucc = (RBNode<Entry<K, V>>) succ;
-            y = ySucc;
-            yOriginalColor = y.getColor();
+            RBNode<Entry<K, V>> succNode = (RBNode<Entry<K, V>>) succ;
 
-            Node<Entry<K, V>> yRightRaw = y.getRightChild();
-            x = (yRightRaw instanceof RBNode) ? (RBNode<Entry<K, V>>) yRightRaw : null;
-
-            if (y.getParent() == z) {
-                if (x != null) x.setParent(y);
-            } else {
-                transplant(y, y.getRightChild());
-                y.setRightChild(z.getRightChild());
-                if (y.getRightChild() != null) ((BTNode<Entry<K, V>>) y.getRightChild()).setParent(y);
-            }
-
-            transplant(z, y);
-            y.setLeftChild(z.getLeftChild());
-            if (y.getLeftChild() != null) ((BTNode<Entry<K, V>>) y.getLeftChild()).setParent(y);
-            y.setColor(z.getColor());
+            z.setElement(succNode.getElement());
+            noRem = succNode;
         }
 
-        if (yOriginalColor == Color.BLACK) {
-            RBNode<Entry<K, V>> xParent = (x != null && x.getParent() instanceof RBNode)
-                    ? (RBNode<Entry<K, V>>) x.getParent()
-                    : (root instanceof RBNode ? (RBNode<Entry<K, V>>) ((BTNode<Entry<K, V>>) root) : null);
-            deleteFixup(x, xParent);
+        Node<Entry<K, V>> rawChild = (noRem.getLeftChild() != null) ? noRem.getLeftChild() : noRem.getRightChild();
+        RBNode<Entry<K, V>> x = (rawChild instanceof RBNode) ? (RBNode<Entry<K, V>>) rawChild : null;
+        Color noRemColor = noRem.getColor();
+        transplant(noRem, rawChild);
+
+        if (noRemColor == Color.RED) {
+            if (root != null && root instanceof RBNode) ((RBNode<Entry<K,V>>) root).setColor(Color.BLACK);
+            currentSize--;
+            return oldValue;
         }
 
-        if (root != null && root instanceof RBNode) ((RBNode<Entry<K, V>>) root).setColor(Color.BLACK);
+        if (x != null && x.getColor() == Color.RED) {
+            x.setColor(Color.BLACK);
+            if (root != null && root instanceof RBNode) ((RBNode<Entry<K,V>>) root).setColor(Color.BLACK);
+            currentSize--;
+            return oldValue;
+        }
+
+        RBNode<Entry<K, V>> xParent = null;
+        Node<Entry<K, V>> rawParent = noRem.getParent();
+        if (rawParent instanceof RBNode) {
+            xParent = (RBNode<Entry<K, V>>) rawParent;
+        } else if (rawParent == null && root instanceof RBNode) {
+            xParent = (RBNode<Entry<K, V>>) ((BTNode<Entry<K, V>>) root);
+        }
+
+        deleteFixup(x, xParent);
+
+        if (root != null && root instanceof RBNode) ((RBNode<Entry<K,V>>) root).setColor(Color.BLACK);
 
         currentSize--;
         return oldValue;
