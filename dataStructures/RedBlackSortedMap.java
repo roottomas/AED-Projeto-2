@@ -45,7 +45,7 @@ public class RedBlackSortedMap<K extends Comparable<K>, V> extends AdvancedBSTre
             RBNode<Entry<K,V>> uncle = parent.isLeftChild() ? gParent.getRightChild() :
                     gParent.getLeftChild();
             if(uncle != null && uncle.getColor() == Color.RED){
-                handleRecoloring(parent,uncle,gParent);
+                recoloring(parent,uncle,gParent);
             } else if(parent.isLeftChild()){
                 handleLeftSituation(node,parent,gParent);
             } else if(!parent.isLeftChild()){
@@ -55,7 +55,7 @@ public class RedBlackSortedMap<K extends Comparable<K>, V> extends AdvancedBSTre
         ((RBNode<Entry<K,V>>) root).setColor(Color.BLACK);
     }
 
-    private void handleRecoloring(RBNode<Entry<K,V>> parent, RBNode<Entry<K,V>> uncle,
+    private void recoloring(RBNode<Entry<K,V>> parent, RBNode<Entry<K,V>> uncle,
                                   RBNode<Entry<K,V>> gParent){
         uncle.flipColor();
         parent.flipColor();
