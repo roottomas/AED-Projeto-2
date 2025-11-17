@@ -29,9 +29,12 @@ public class AVLSortedMap<K extends Comparable<K>, V> extends AdvancedBSTree<K, 
     @Override
     public V put(K key, V value) {
         V old = super.put(key, value);
-        AVLNode<Entry<K, V>> node = locateNode((AVLNode<Entry<K, V>>) root, key);
-        rebalanceUp(node);
-        currentSize++;
+        if (old == null) {
+            currentSize++;
+        }
+        @SuppressWarnings("unchecked")
+        AVLNode<Entry<K, V>> node = (AVLNode<Entry<K, V>>) super.locateNode(root, key);
+        if (node != null) rebalanceUp(node);
         return old;
     }
 
@@ -43,34 +46,17 @@ public class AVLSortedMap<K extends Comparable<K>, V> extends AdvancedBSTree<K, 
      */
     @Override
     public V remove(K key) throws NoSuchElementException {
-        AVLNode<Entry<K, V>> node = locateNode((AVLNode<Entry<K, V>>) root, key);
+        @SuppressWarnings("unchecked")
+        AVLNode<Entry<K, V>> node = (AVLNode<Entry<K, V>>) super.locateNode(root, key);
         if (node == null) throw new NoSuchElementException();
+
+        @SuppressWarnings("unchecked")
         AVLNode<Entry<K, V>> parent = (AVLNode<Entry<K, V>>) node.getParent();
-
         V old = super.remove(key);
-
         if (parent != null) rebalanceUp(parent);
         else if (root != null) rebalanceUp((AVLNode<Entry<K, V>>) root);
         currentSize--;
         return old;
-    }
-
-    /**
-     * Locate node by key starting from a given node.
-     * @param startNode initial position for the search
-     * @param key key to look for
-     * Time complexity: O(log n)
-     * @return the AVLNode containing the key, or null if not found
-     */
-    private AVLNode<Entry<K, V>> locateNode(AVLNode<Entry<K, V>> startNode, K key) {
-        AVLNode<Entry<K, V>> current = startNode;
-        while (current != null) {
-            int cmp = key.compareTo(current.getElement().key());
-            if (cmp == 0) return current;
-            current = (cmp < 0) ? (AVLNode<Entry<K, V>>) current.getLeftChild()
-                    : (AVLNode<Entry<K, V>>) current.getRightChild();
-        }
-        return null;
     }
 
     /**

@@ -114,4 +114,24 @@ abstract class AdvancedBSTree <K extends Comparable<K>,V> extends BSTSortedMap<K
             return x;
         }
     }
+
+    /**
+     * Locate node by key starting from a given node.
+     * @param startNode initial position for the search
+     * @param key key to look for (must be non-null)
+     * Time complexity: O(h) where h is the height of the subtree.
+     * Note: for balanced trees h = O(log n), otherwise h = O(n).
+     * @return the BTNode containing the key, or null if not found
+     */
+    protected BTNode<Entry<K, V>> locateNode(BTNode<Entry<K, V>> startNode, K key) {
+        BTNode<Entry<K, V>> current = startNode;
+        while (current != null) {
+            int cmp = key.compareTo(current.getElement().key());
+            if (cmp == 0) return current;
+            current = (cmp < 0) ? (BTNode<Entry<K, V>>) current.getLeftChild()
+                    : (BTNode<Entry<K, V>>) current.getRightChild();
+        }
+        return null;
+    }
+
 }
